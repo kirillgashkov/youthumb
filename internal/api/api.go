@@ -1,15 +1,29 @@
 package api
 
 import (
+	"github.com/kirillgashkov/assignment-youthumb/internal/api/interceptor"
+	"github.com/kirillgashkov/assignment-youthumb/internal/config"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
-type ThumbnailServiceServer struct {
-	youthumbpb.UnimplementedThumbnailServiceServer
-}
+func NewServer(cfg *config.Config) *grpc.Server {
+	srv := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			interceptor.NewUnaryRecover(),
+			interceptor.NewUnaryLog(),
+		),
+		grpc.ChainStreamInterceptor(
+			interceptor.NewStreamRecover(),
+			interceptor.NewStreamLog(),
+		),
+	)
 
-func (*ThumbnailServiceServer) GetThumbnail(*youthumbpb.GetThumbnailRequest, youthumbpb.ThumbnailService_GetThumbnailServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetThumbnail not implemented")
+	if cfg.Mode == config.ModeDevelopment {
+		reflection.Register(srv)
+	}
+	youthumbpb.RegisterThumbnailServiceServer(srv, &thumbnailServiceServer{})
+
+	return srv
 }

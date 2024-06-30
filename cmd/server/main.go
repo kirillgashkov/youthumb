@@ -2,12 +2,8 @@ package main
 
 import (
 	"github.com/kirillgashkov/assignment-youthumb/internal/api"
-	"github.com/kirillgashkov/assignment-youthumb/internal/api/interceptor"
 	"github.com/kirillgashkov/assignment-youthumb/internal/config"
 	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
-	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	"log/slog"
 	"net"
 )
@@ -30,20 +26,7 @@ func mainErr() error {
 	}
 	slog.SetDefault(log)
 
-	srv := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(
-			interceptor.NewUnaryRecover(),
-			interceptor.NewUnaryLog(),
-		),
-		grpc.ChainStreamInterceptor(
-			interceptor.NewStreamRecover(),
-			interceptor.NewStreamLog(),
-		),
-	)
-	if cfg.Mode == config.ModeDevelopment {
-		reflection.Register(srv)
-	}
-	youthumbpb.RegisterThumbnailServiceServer(srv, &api.ThumbnailServiceServer{})
+	srv := api.NewServer(cfg)
 
 	addr := &net.TCPAddr{IP: net.ParseIP(cfg.GRPC.Host), Port: cfg.GRPC.Port}
 	lis, err := net.ListenTCP("tcp", addr)
