@@ -8,6 +8,8 @@ require (
 	google.golang.org/protobuf v1.34.2
 )
 
+require github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
+
 require (
 	github.com/caarlos0/env/v11 v11.1.0
 	golang.org/x/net v0.22.0 // indirect
