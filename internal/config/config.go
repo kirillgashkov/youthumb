@@ -17,7 +17,7 @@ type Config struct {
 
 type GRPCConfig struct {
 	Host string `env:"APP_GRPC_HOST" envDefault:"127.0.0.1"`
-	Port int    `env:"APP_GRPC_PORT" envDefault:"8000"`
+	Port int    `env:"APP_GRPC_PORT" envDefault:"50051"`
 }
 
 func New() (*Config, error) {
