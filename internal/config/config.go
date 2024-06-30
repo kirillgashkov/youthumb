@@ -33,7 +33,7 @@ func New() (*Config, error) {
 
 func validate(cfg *Config) error {
 	if cfg.Mode != ModeDevelopment && cfg.Mode != ModeProduction {
-		return fmt.Errorf("invalid APP_MODE value: %s", cfg.Mode)
+		return fmt.Errorf("invalid mode: %s", cfg.Mode)
 	}
 	return nil
 }
