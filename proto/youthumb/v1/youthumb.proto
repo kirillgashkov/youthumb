@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+option go_package="github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1;youthumbpb";
+
+package youthumb.v1;
