@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/kirillgashkov/assignment-youthumb/internal/api"
+	"github.com/kirillgashkov/assignment-youthumb/internal/api/interceptor"
 	"github.com/kirillgashkov/assignment-youthumb/internal/config"
 	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
@@ -29,7 +30,16 @@ func mainErr() error {
 	}
 	slog.SetDefault(log)
 
-	srv := grpc.NewServer()
+	srv := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			interceptor.NewUnaryRecover(),
+			interceptor.NewUnaryLog(),
+		),
+		grpc.ChainStreamInterceptor(
+			interceptor.NewStreamRecover(),
+			interceptor.NewStreamLog(),
+		),
+	)
 	if cfg.Mode == config.ModeDevelopment {
 		reflection.Register(srv)
 	}
