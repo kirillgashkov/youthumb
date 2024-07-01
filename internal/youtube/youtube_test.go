@@ -31,3 +31,13 @@ func TestParseVideoID(t *testing.T) {
 		})
 	}
 }
+
+func TestThumbnailURL(t *testing.T) {
+	videoID := "dQw4w9WgXcQ"
+	want := "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
+
+	got := youtube.ThumbnailURL(videoID)
+	if got != want {
+		t.Errorf("ThumbnailURL() got = %v, want %v", got, want)
+	}
+}

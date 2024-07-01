@@ -24,3 +24,7 @@ func ParseVideoID(videoURL string) (string, error) {
 
 	return "", fmt.Errorf("unknown video URL: %s", videoURL)
 }
+
+func ThumbnailURL(videoID string) string {
+	return fmt.Sprintf("https://i.ytimg.com/vi/%s/maxresdefault.jpg", videoID)
+}
