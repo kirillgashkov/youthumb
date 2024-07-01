@@ -2,9 +2,8 @@ package interceptor
 
 import (
 	"context"
+	"github.com/kirillgashkov/assignment-youthumb/internal/api/errors"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"log/slog"
 	"runtime/debug"
 )
@@ -16,7 +15,7 @@ func NewUnaryServerRecover() grpc.UnaryServerInterceptor {
 		defer func() {
 			if p := recover(); p != nil {
 				slog.Error("unary caught panic", "method", info.FullMethod, "panic", p, "stack", string(debug.Stack()))
-				resp, err = nil, status.Error(codes.Internal, "internal server error")
+				resp, err = nil, errors.ErrGRPCInternal
 			}
 		}()
 		resp, err = handler(ctx, req)
@@ -31,7 +30,7 @@ func NewStreamServerRecover() grpc.StreamServerInterceptor {
 		defer func() {
 			if p := recover(); p != nil {
 				slog.Error("stream caught panic", "method", info.FullMethod, "panic", p, "stack", string(debug.Stack()))
-				err = status.Error(codes.Internal, "internal server error")
+				err = errors.ErrGRPCInternal
 			}
 		}()
 		err = handler(srv, ss)
