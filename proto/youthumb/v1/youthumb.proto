@@ -1,5 +1,17 @@
 syntax = "proto3";
-
 option go_package="github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1;youthumbpb";
 
 package youthumb.v1;
+
+message ThumbnailChunk {
+  string content_type = 1;
+  bytes data = 2;
+}
+
+message GetThumbnailRequest {
+  string video_url = 1;
+}
+
+service ThumbnailService {
+  rpc GetThumbnail(GetThumbnailRequest) returns (stream ThumbnailChunk);
+}
