@@ -5,7 +5,15 @@ import (
 	"net/url"
 )
 
-func ParseVideoID(videoURL string) (string, error) {
+func ThumbnailURLFromVideoURL(videoURL string) (string, error) {
+	videoID, err := parseVideoID(videoURL)
+	if err != nil {
+		return "", err
+	}
+	return thumbnailURL(videoID), nil
+}
+
+func parseVideoID(videoURL string) (string, error) {
 	u, err := url.Parse(videoURL)
 	if err != nil {
 		return "", err
@@ -25,7 +33,7 @@ func ParseVideoID(videoURL string) (string, error) {
 	return "", fmt.Errorf("unknown video URL: %s", videoURL)
 }
 
-func ThumbnailURL(videoID string) string {
+func thumbnailURL(videoID string) string {
 	if videoID == "" {
 		return ""
 	}
