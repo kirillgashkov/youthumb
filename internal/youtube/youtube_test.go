@@ -1,7 +1,7 @@
-package api_test
+package youtube_test
 
 import (
-	"github.com/kirillgashkov/assignment-youthumb/internal/api"
+	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
 	"testing"
 )
 
@@ -20,7 +20,7 @@ func TestParseVideoID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := api.ParseVideoID(tt.videoURL)
+			got, err := youtube.ParseVideoID(tt.videoURL)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ParseVideoID() error = %v, wantErr %v", err, tt.wantErr)
 				return
