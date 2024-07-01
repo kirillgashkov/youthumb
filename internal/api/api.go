@@ -12,12 +12,12 @@ import (
 func NewServer(cfg *config.Config) *grpc.Server {
 	srv := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			interceptor.NewUnaryServerRecover(),
 			interceptor.NewUnaryServerLog(),
+			interceptor.NewUnaryServerRecover(),
 		),
 		grpc.ChainStreamInterceptor(
-			interceptor.NewStreamServerRecover(),
 			interceptor.NewStreamServerLog(),
+			interceptor.NewStreamServerRecover(),
 		),
 	)
 
