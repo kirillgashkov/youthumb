@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/kirillgashkov/assignment-youthumb/internal/api/errors"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc/codes"
@@ -8,6 +9,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 )
 
 // chunkSize is the size of the chunks that are sent to the client. It is chosen
@@ -71,4 +73,24 @@ func (*thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest,
 	}
 
 	return nil
+}
+
+func ParseVideoID(videoURL string) (string, error) {
+	u, err := url.Parse(videoURL)
+	if err != nil {
+		return "", err
+	}
+
+	switch u.Host {
+	case "www.youtube.com", "youtube.com":
+		q, err := url.ParseQuery(u.RawQuery)
+		if err != nil {
+			return "", err
+		}
+		return q.Get("v"), nil
+	case "youtu.be":
+		return u.Path[1:], nil
+	}
+
+	return "", fmt.Errorf("unknown video URL: %s", videoURL)
 }
