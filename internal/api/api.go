@@ -8,15 +8,16 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
+// NewServer creates a new gRPC server.
 func NewServer(cfg *config.Config) *grpc.Server {
 	srv := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			interceptor.NewUnaryRecover(),
-			interceptor.NewUnaryLog(),
+			interceptor.NewUnaryServerRecover(),
+			interceptor.NewUnaryServerLog(),
 		),
 		grpc.ChainStreamInterceptor(
-			interceptor.NewStreamRecover(),
-			interceptor.NewStreamLog(),
+			interceptor.NewStreamServerRecover(),
+			interceptor.NewStreamServerLog(),
 		),
 	)
 

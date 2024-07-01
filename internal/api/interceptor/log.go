@@ -6,9 +6,9 @@ import (
 	"log/slog"
 )
 
-// NewUnaryLog returns a new unary server interceptor that logs completed unary
-// RPCs.
-func NewUnaryLog() grpc.UnaryServerInterceptor {
+// NewUnaryServerLog returns a new unary server interceptor that logs completed
+// unary RPCs.
+func NewUnaryServerLog() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		msg, err := handler(ctx, req)
 		if err != nil {
@@ -21,9 +21,9 @@ func NewUnaryLog() grpc.UnaryServerInterceptor {
 	}
 }
 
-// NewStreamLog returns a new stream server interceptor that logs completed
-// streaming RPCs.
-func NewStreamLog() grpc.StreamServerInterceptor {
+// NewStreamServerLog returns a new stream server interceptor that logs
+// completed streaming RPCs. Message receive and send operations are not logged.
+func NewStreamServerLog() grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		err := handler(srv, ss)
 		if err != nil {
