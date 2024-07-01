@@ -26,5 +26,8 @@ func ParseVideoID(videoURL string) (string, error) {
 }
 
 func ThumbnailURL(videoID string) string {
+	if videoID == "" {
+		return ""
+	}
 	return fmt.Sprintf("https://i.ytimg.com/vi/%s/maxresdefault.jpg", videoID)
 }
