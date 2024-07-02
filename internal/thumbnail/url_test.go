@@ -6,7 +6,7 @@ import (
 	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
 )
 
-func TestThumbnailURLFromVideoURL(t *testing.T) {
+func TestURLFromVideoURL(t *testing.T) {
 	tests := []struct {
 		name     string
 		videoURL string
@@ -22,13 +22,13 @@ func TestThumbnailURLFromVideoURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := thumbnail.ThumbnailURLFromVideoURL(tt.videoURL)
+			got, err := thumbnail.URLFromVideoURL(tt.videoURL)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("ThumbnailURLFromVideoURL() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("URLFromVideoURL() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got != tt.want {
-				t.Errorf("ThumbnailURLFromVideoURL() got = %v, want %v", got, tt.want)
+				t.Errorf("URLFromVideoURL() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

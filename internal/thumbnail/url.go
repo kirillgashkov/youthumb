@@ -5,15 +5,14 @@ import (
 	"net/url"
 )
 
-// ThumbnailURLFromVideoURL returns a URL of a thumbnail for a given YouTube
-// video URL.
-func ThumbnailURLFromVideoURL(videoURL string) (string, error) {
+// URLFromVideoURL returns a URL of a thumbnail for a given YouTube video URL.
+func URLFromVideoURL(videoURL string) (string, error) {
 	videoID, err := ParseVideoID(videoURL)
 	if err != nil {
 		return "", err
 	}
 
-	u, err := ThumbnailURL(videoID)
+	u, err := URL(videoID)
 	return u, err
 }
 
@@ -38,8 +37,8 @@ func ParseVideoID(videoURL string) (string, error) {
 	return "", fmt.Errorf("unknown video URL: %s", videoURL)
 }
 
-// ThumbnailURL returns a URL of a thumbnail for a given YouTube video ID.
-func ThumbnailURL(videoID string) (string, error) {
+// URL returns a URL of a thumbnail for a given YouTube video ID.
+func URL(videoID string) (string, error) {
 	if videoID == "" {
 		return "", fmt.Errorf("video ID is required")
 	}

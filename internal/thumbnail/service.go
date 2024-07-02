@@ -22,7 +22,11 @@ var errThumbnailNotFound = errors.New("thumbnail not found")
 
 type Service struct {
 	youthumbpb.UnimplementedThumbnailServiceServer
-	Cache *Cache
+	cache *Cache
+}
+
+func NewService(cache *Cache) *Service {
+	return &Service{cache: cache}
 }
 
 func (s *Service) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youthumbpb.ThumbnailService_GetThumbnailServer) error {
@@ -34,12 +38,12 @@ func (s *Service) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youth
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "video URL is invalid")
 	}
-	thumbnailURL, err := ThumbnailURLFromVideoURL(req.VideoUrl)
+	thumbnailURL, err := URLFromVideoURL(req.VideoUrl)
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "video URL is invalid")
 	}
 
-	t, err := s.Cache.GetThumbnail(videoID)
+	t, err := s.cache.GetThumbnail(videoID)
 	if errors.Is(err, ErrCacheNotFound) {
 		downloadedThumbnail, expirationTime, err := downloadThumbnail(thumbnailURL)
 		if err != nil {
@@ -50,7 +54,7 @@ func (s *Service) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youth
 		}
 		t = downloadedThumbnail
 
-		if err := s.Cache.SetThumbnail(videoID, downloadedThumbnail, expirationTime); err != nil {
+		if err := s.cache.SetThumbnail(videoID, downloadedThumbnail, expirationTime); err != nil {
 			slog.Error("failed to set thumbnail in cache", "error", err)
 		}
 	} else if err != nil {

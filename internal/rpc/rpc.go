@@ -10,7 +10,7 @@ import (
 )
 
 // NewServer creates a new gRPC server.
-func NewServer(cch *thumbnail.Cache, cfg *config.Config) *grpc.Server {
+func NewServer(cache *thumbnail.Cache, cfg *config.Config) *grpc.Server {
 	srv := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptor.NewUnaryServerLog(),
@@ -25,7 +25,7 @@ func NewServer(cch *thumbnail.Cache, cfg *config.Config) *grpc.Server {
 	if cfg.Mode == config.ModeDevelopment {
 		reflection.Register(srv)
 	}
-	youthumbpb.RegisterThumbnailServiceServer(srv, &thumbnail.Service{Cache: cch})
+	youthumbpb.RegisterThumbnailServiceServer(srv, thumbnail.NewService(cache))
 
 	return srv
 }

@@ -47,19 +47,19 @@ func mainErr() error {
 
 	// Prepare cache.
 
-	c, err := thumbnail.OpenCache(*dsn)
+	cache, err := thumbnail.OpenCache(*dsn)
 	if err != nil {
 		return err
 	}
-	defer func(c *thumbnail.Cache) {
-		if err := c.Close(); err != nil {
+	defer func(cache *thumbnail.Cache) {
+		if err := cache.Close(); err != nil {
 			slog.Error("failed to close cache", "error", err)
 		}
-	}(c)
+	}(cache)
 
 	// Create and start the server.
 
-	srv := rpc.NewServer(c, cfg)
+	srv := rpc.NewServer(cache, cfg)
 
 	addr := &net.TCPAddr{IP: net.ParseIP(cfg.GRPC.Host), Port: cfg.GRPC.Port}
 	lis, err := net.ListenTCP("tcp", addr)
