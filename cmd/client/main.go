@@ -2,70 +2,46 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"log/slog"
-	"mime"
 	"os"
-	"path/filepath"
 	"sync"
 
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/log"
 
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
-
-	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
-	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
-)
-
-var (
-	errUsage = errors.New("usage")
 )
 
 var (
 	isAsync   = flag.Bool("async", false, "Download thumbnails asynchronously.")
-	outputDir = flag.String("output", "", "Download thumbnails to the specified directory. Required.")
+	outputDir = flag.String("o", "", "Download thumbnails to the specified directory.")
 )
 
-func usage() {
-	fmt.Fprintf(flag.CommandLine.Output(), `Usage: %s [OPTIONS] VIDEO_URL...
-
-Download thumbnails for YouTube videos with the specified URLs.
-
-Arguments:
-  VIDEO_URL
-        The URL of the video to download the thumbnail for.
-
-Options:
-`, os.Args[0])
-	flag.PrintDefaults()
-}
-
 func main() {
-	err := mainErr()
-	if errors.Is(err, errUsage) {
-		flag.Usage()
-		os.Exit(2)
-	}
-	if err != nil {
-		slog.Error("fatal", "error", err)
-		os.Exit(1)
-	}
-}
-
-func mainErr() error {
 	flag.Usage = usage
 	flag.Parse()
 
 	if *outputDir == "" {
-		return errUsage
+		s := "output directory is required, use -o flag"
+		if _, err := fmt.Fprintln(flag.CommandLine.Output(), s); err != nil {
+			panic(err)
+		}
+		os.Exit(2)
 	}
 
-	if flag.NArg() == 0 {
-		return errUsage
+	if err := mainErr(); err != nil {
+		s := fmt.Sprintf("fatal error: %v", err)
+		if _, err := fmt.Fprintln(flag.CommandLine.Output(), s); err != nil {
+			panic(err)
+		}
+		os.Exit(1)
 	}
+	os.Exit(0)
+}
+
+func mainErr() error {
+	// Prepare configuration and logging.
 
 	cfg, err := config.New()
 	if err != nil {
@@ -78,6 +54,8 @@ func mainErr() error {
 	}
 	slog.SetDefault(logger)
 
+	// Prepare the client.
+
 	clientConn, err := newClient(cfg.GRPC)
 	if err != nil {
 		return err
@@ -87,6 +65,8 @@ func mainErr() error {
 	if err != nil {
 		return err
 	}
+
+	// Download thumbnails.
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -119,95 +99,20 @@ func mainErr() error {
 	return nil
 }
 
-func newThumbnailDownloader(cli youthumbpb.ThumbnailServiceClient, outputDir string) *thumbnailDownloader {
-	return &thumbnailDownloader{cli: cli, outputDir: outputDir, muCh: make(chan struct{}, 1)}
-}
+func usage() {
+	u := fmt.Sprintf(`Usage: %s [OPTIONS] [FILE_WITH_VIDEO_URLS...]
 
-type thumbnailDownloader struct {
-	cli       youthumbpb.ThumbnailServiceClient
-	outputDir string
-	muCh      chan struct{}
-}
+A client for downloading thumbnails for YouTube videos with the specified URLs.
 
-func (d *thumbnailDownloader) DownloadThumbnail(ctx context.Context, videoURL string) error {
-	contentFile, err := os.CreateTemp("", "thumbnail-*")
-	if err != nil {
-		return err
+Arguments:
+  FILE_WITH_VIDEO_URLS
+		Path to a file with new-line separated YouTube video URLs.
+
+Options:
+`, os.Args[0])
+
+	if _, err := fmt.Fprint(flag.CommandLine.Output(), u); err != nil {
+		panic(err)
 	}
-	defer func(contentFile *os.File) {
-		if err := contentFile.Close(); err != nil && !errors.Is(err, os.ErrClosed) {
-			slog.Error("failed to close file", "error", err)
-		}
-	}(contentFile)
-
-	stream, err := d.cli.GetThumbnail(ctx, &youthumbpb.GetThumbnailRequest{VideoUrl: videoURL})
-	if err != nil {
-		return err
-	}
-
-	contentType := ""
-	for {
-		chunk, err := stream.Recv()
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		if err != nil {
-			return err
-		}
-
-		if chunk.ContentType != "" {
-			contentType = chunk.ContentType
-		}
-
-		if _, err := contentFile.Write(chunk.Data); err != nil {
-			return err
-		}
-	}
-
-	if err := contentFile.Close(); err != nil {
-		return err
-	}
-
-	extension := ""
-	if contentType != "" {
-		extensions, err := mime.ExtensionsByType(contentType)
-		if err != nil {
-			slog.Error("failed to get extensions by type", "content_type", contentType, "error", err)
-		}
-
-		if len(extensions) != 0 {
-			// Last extension appears to be the most common one.
-			extension = extensions[len(extensions)-1]
-		}
-	}
-
-	select {
-	case d.muCh <- struct{}{}:
-		func() {
-			defer func() {
-				<-d.muCh
-			}()
-
-			videoID, err := thumbnail.ParseVideoID(videoURL)
-			if err != nil {
-				slog.Error("failed to parse video ID", "video_url", videoURL, "error", err)
-				return
-			}
-
-			outputFilePath := filepath.Join(d.outputDir, videoID+extension)
-
-			if err := os.MkdirAll(d.outputDir, 0755); err != nil {
-				slog.Error("failed to create directory", "output_dir", d.outputDir, "error", err)
-				return
-			}
-
-			if err := os.Rename(contentFile.Name(), outputFilePath); err != nil {
-				slog.Error("failed to rename file", "error", err)
-			}
-		}()
-	case <-ctx.Done():
-		return ctx.Err()
-	}
-
-	return nil
+	flag.PrintDefaults()
 }
