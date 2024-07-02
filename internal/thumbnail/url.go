@@ -5,17 +5,6 @@ import (
 	"net/url"
 )
 
-// URLFromVideoURL returns a URL of a thumbnail for a given YouTube video URL.
-func URLFromVideoURL(videoURL string) (string, error) {
-	videoID, err := ParseVideoID(videoURL)
-	if err != nil {
-		return "", err
-	}
-
-	u, err := URL(videoID)
-	return u, err
-}
-
 // ParseVideoID extracts a video ID from a YouTube video URL.
 func ParseVideoID(videoURL string) (string, error) {
 	u, err := url.Parse(videoURL)
