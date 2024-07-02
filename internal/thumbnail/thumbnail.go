@@ -1,6 +1,9 @@
 package thumbnail
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 var (
 	// errNotFound is returned when a thumbnail is not found in cache or remote
@@ -12,4 +15,5 @@ var (
 type Thumbnail struct {
 	ContentType string
 	Data        []byte
+	Expiration  time.Time
 }
