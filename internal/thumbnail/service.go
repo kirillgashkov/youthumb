@@ -2,17 +2,11 @@ package thumbnail
 
 import (
 	"errors"
-	"fmt"
-	"io"
-	"log/slog"
-	"net/http"
-	"strings"
-	"time"
-
 	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/message"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"log/slog"
 )
 
 const (
@@ -45,7 +39,7 @@ func (s *Service) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youth
 
 	t, err := s.cache.GetThumbnail(videoID)
 	if errors.Is(err, errNotFound) {
-		downloadedThumbnail, expirationTime, err := downloadThumbnail(thumbnailURL)
+		downloadedThumbnail, expirationTime, err := download(thumbnailURL)
 		if err != nil {
 			if errors.Is(err, errNotFound) {
 				return status.Errorf(codes.NotFound, "video or thumbnail not found")
@@ -83,40 +77,4 @@ func (s *Service) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youth
 	}
 
 	return nil
-}
-
-func downloadThumbnail(thumbnailURL string) (*Thumbnail, time.Time, error) {
-	resp, err := http.Get(thumbnailURL)
-	if err != nil {
-		return nil, time.Time{}, err
-	}
-	defer func(resp *http.Response) {
-		if err := resp.Body.Close(); err != nil {
-			slog.Error("failed to close response body", "error", err)
-		}
-	}(resp)
-
-	if resp.StatusCode != http.StatusOK {
-		if resp.StatusCode == http.StatusNotFound {
-			return nil, time.Time{}, errNotFound
-		}
-		return nil, time.Time{}, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	expiresHeader := resp.Header.Get("Expires")
-	expirationTime, err := time.Parse(time.RFC1123, expiresHeader)
-	if err != nil {
-		return nil, time.Time{}, err
-	}
-
-	sb := &strings.Builder{}
-	if _, err := io.Copy(sb, resp.Body); err != nil {
-		return nil, time.Time{}, err
-	}
-
-	t := &Thumbnail{
-		ContentType: resp.Header.Get("Content-Type"), Data: []byte(sb.String()),
-	}
-
-	return t, expirationTime, nil
 }
