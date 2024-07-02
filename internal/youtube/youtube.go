@@ -43,5 +43,5 @@ func ThumbnailURL(videoID string) (string, error) {
 	if videoID == "" {
 		return "", fmt.Errorf("video ID is required")
 	}
-	return fmt.Sprintf("https://i.ytimg.com/vi/%s/maxresdefault.jpg", videoID), nil
+	return fmt.Sprintf("https://i.ytimg.com/vi/%s/hqdefault.jpg", videoID), nil
 }

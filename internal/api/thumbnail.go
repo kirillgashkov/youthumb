@@ -28,6 +28,7 @@ func (*thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest,
 		return status.Errorf(codes.InvalidArgument, "video URL is invalid")
 	}
 
+	slog.Info("thumbnail URL", "url", thumbnailURL)
 	resp, err := http.Get(thumbnailURL)
 	if err != nil {
 		return errors.ErrGRPCInternal
@@ -40,7 +41,7 @@ func (*thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest,
 
 	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusNotFound {
-			return status.Errorf(codes.NotFound, "video not found")
+			return status.Errorf(codes.NotFound, "video or thumbnail not found")
 		}
 		return errors.ErrGRPCInternal
 	}
