@@ -8,17 +8,17 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// Cache is a key-value cache for thumbnails with expiration.
+// Cache is a cache for thumbnail images.
 type Cache struct {
-	// Path to the SQLite database file.
-	Path string
-	db   *sql.DB
+	// db is the SQLite database connection pool.
+	db *sql.DB
 }
 
-// OpenCache opens the cache at the given path. The caller is responsible for
-// closing the cache.
-func OpenCache(path string) (*Cache, error) {
-	db, err := sql.Open("sqlite3", path)
+// OpenCache opens a new cache.
+//
+// The given DSN must be a SQLite DSN.
+func OpenCache(dsn string) (*Cache, error) {
+	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func OpenCache(path string) (*Cache, error) {
 		return nil, err
 	}
 
-	return &Cache{Path: path, db: db}, nil
+	return &Cache{db: db}, nil
 }
 
 // Close closes the cache.
@@ -43,13 +43,17 @@ func (c *Cache) Close() error {
 	return c.db.Close()
 }
 
-// GetThumbnail returns the thumbnail for the given video ID from the cache.
+// GetThumbnail returns a thumbnail from the cache.
+//
+// If the thumbnail is not found in the cache, it returns errNotFound.
 func (c *Cache) GetThumbnail(videoID string) (*Thumbnail, error) {
-	query := `SELECT content_type, data FROM cache WHERE video_id = ? AND expires_at > ?`
+	query := `SELECT content_type, data, expires_at FROM cache WHERE video_id = ? AND expires_at > ?`
+	row := c.db.QueryRow(query, videoID, time.Now().Unix())
 
 	var contentType string
 	var data []byte
-	err := c.db.QueryRow(query, videoID, time.Now().Unix()).Scan(&contentType, &data)
+	var expiration int64
+	err := row.Scan(&contentType, &data, &expiration)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, errNotFound
 	}
@@ -57,13 +61,21 @@ func (c *Cache) GetThumbnail(videoID string) (*Thumbnail, error) {
 		return nil, err
 	}
 
-	return &Thumbnail{ContentType: contentType, Data: data}, nil
+	t := &Thumbnail{
+		ContentType: contentType,
+		Data:        data,
+		Expiration:  time.Unix(expiration, 0),
+	}
+	return t, nil
 }
 
-// SetThumbnail sets the thumbnail for the given video ID in the cache with the
-// given expiration time.
+// SetThumbnail sets a thumbnail in the cache.
 func (c *Cache) SetThumbnail(videoID string, t *Thumbnail, expiration time.Time) error {
 	query := `INSERT OR REPLACE INTO cache (video_id, content_type, data, expires_at) VALUES (?, ?, ?, ?)`
-	_, err := c.db.Exec(query, videoID, t.ContentType, t.Data, expiration.Unix())
-	return err
+
+	if _, err := c.db.Exec(query, videoID, t.ContentType, t.Data, expiration.Unix()); err != nil {
+		return err
+	}
+
+	return nil
 }
