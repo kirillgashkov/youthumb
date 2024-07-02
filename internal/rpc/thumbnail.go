@@ -11,7 +11,7 @@ import (
 
 	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
 	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/errs"
-	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
+	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -32,11 +32,11 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 		return status.Errorf(codes.InvalidArgument, "video URL is required")
 	}
 
-	videoID, err := youtube.ParseVideoID(req.VideoUrl)
+	videoID, err := thumbnail.ParseVideoID(req.VideoUrl)
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "video URL is invalid")
 	}
-	thumbnailURL, err := youtube.ThumbnailURLFromVideoURL(req.VideoUrl)
+	thumbnailURL, err := thumbnail.ThumbnailURLFromVideoURL(req.VideoUrl)
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "video URL is invalid")
 	}

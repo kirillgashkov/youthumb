@@ -17,7 +17,7 @@ import (
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
 
 	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/client"
-	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
+	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 )
 
@@ -189,7 +189,7 @@ func (d *thumbnailDownloader) DownloadThumbnail(ctx context.Context, videoURL st
 				<-d.muCh
 			}()
 
-			videoID, err := youtube.ParseVideoID(videoURL)
+			videoID, err := thumbnail.ParseVideoID(videoURL)
 			if err != nil {
 				slog.Error("failed to parse video ID", "video_url", videoURL, "error", err)
 				return
