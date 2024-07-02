@@ -15,7 +15,7 @@ import (
 
 var (
 	isAsync   = flag.Bool("async", false, "Download thumbnails asynchronously.")
-	outputDir = flag.String("o", "", "Download thumbnails to the specified directory.")
+	outputDir = flag.String("o", "", "Path to the output directory.")
 )
 
 func main() {
@@ -66,7 +66,22 @@ func mainErr() error {
 		return err
 	}
 
-	// Download thumbnails.
+	// Read video URLs.
+
+	var videoURLs []string
+	if flag.NArg() == 0 {
+		videoURLs, err = readVideoURLs(os.Stdin)
+		if err != nil {
+			return err
+		}
+	} else {
+		videoURLs, err = readVideoURLsFromFiles(flag.Args())
+		if err != nil {
+			return err
+		}
+	}
+
+	// Download thumbnails and write them to the output directory.
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -78,19 +93,19 @@ func mainErr() error {
 			wg := sync.WaitGroup{}
 			defer wg.Wait()
 
-			for _, videoURL := range flag.Args() {
+			for _, videoURL := range videoURLs {
 				wg.Add(1)
 				go func() { // https://go.dev/blog/loopvar-preview
 					defer wg.Done()
-					if err := downloader.DownloadThumbnail(ctx, videoURL); err != nil {
+					if err := downloader.DownloadThumbnailForVideoURL(ctx, videoURL); err != nil {
 						slog.Error("failed to download thumbnail", "video_url", videoURL, "error", err)
 					}
 				}()
 			}
 		}()
 	} else {
-		for _, videoURL := range flag.Args() {
-			if err := downloader.DownloadThumbnail(ctx, videoURL); err != nil {
+		for _, videoURL := range videoURLs {
+			if err := downloader.DownloadThumbnailForVideoURL(ctx, videoURL); err != nil {
 				slog.Error("failed to download thumbnail", "video_url", videoURL, "error", err)
 			}
 		}
@@ -104,9 +119,13 @@ func usage() {
 
 A client for downloading thumbnails for YouTube videos with the specified URLs.
 
+gRPC server address is specified via the environment variables APP_GRPC_HOST and
+APP_GRPC_PORT.
+
 Arguments:
   FILE_WITH_VIDEO_URLS
-		Path to a file with new-line separated YouTube video URLs.
+		Path to a file with new-line separated YouTube video URLs. If no files
+		are provided, the URLs are read from the standard input.
 
 Options:
 `, os.Args[0])

@@ -23,7 +23,7 @@ func newThumbnailDownloader(cli youthumbpb.ThumbnailServiceClient, outputDir str
 	return &thumbnailDownloader{cli: cli, outputDir: outputDir, muCh: make(chan struct{}, 1)}
 }
 
-func (d *thumbnailDownloader) DownloadThumbnail(ctx context.Context, videoURL string) error {
+func (d *thumbnailDownloader) DownloadThumbnailForVideoURL(ctx context.Context, videoURL string) error {
 	// Create a temporary file to store the thumbnail content.
 
 	contentFile, err := os.CreateTemp("", "thumbnail-*")
