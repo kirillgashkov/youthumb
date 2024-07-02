@@ -3,7 +3,8 @@ package thumbnail
 import "errors"
 
 var (
-	// errNotFound is returned when a thumbnail is not found.
+	// errNotFound is returned when a thumbnail is not found in cache or remote
+	// server.
 	errNotFound = errors.New("thumbnail not found")
 )
 
