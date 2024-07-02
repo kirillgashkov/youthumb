@@ -10,6 +10,11 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var (
+	// ErrNotFound is returned when the thumbnail is not found in the cache.
+	ErrNotFound = errors.New("thumbnail not found")
+)
+
 // Thumbnail represents a thumbnail image.
 type Thumbnail struct {
 	ContentType string
@@ -59,7 +64,7 @@ func (c *Cache) GetThumbnail(videoID string) (*Thumbnail, error) {
 	var data []byte
 	err := c.db.QueryRow(query, videoID, time.Now().Unix()).Scan(&contentType, &data)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
+		return nil, ErrNotFound
 	}
 	if err != nil {
 		return nil, err
