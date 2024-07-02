@@ -1,6 +1,17 @@
-FROM golang:1.22.4 AS builder
+# Debian is used to avoid compatibility issues when using cgo.
+FROM golang:1.22.4-bookworm AS builder
 
 WORKDIR /user/src/
+
+# Install external dependencies.
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      build-essential \
+      libsqlite3-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install Go dependencies.
 
 COPY ./go.mod ./go.sum ./
 RUN go mod download
@@ -9,22 +20,41 @@ COPY ./cmd/ ./cmd/
 COPY ./internal/ ./internal/
 COPY ./proto/ ./proto/
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /user/bin/ /user/src/cmd/...
+# Build the application.
+
+# CGO_ENABLED=1 is required by go-sqlite3.
+RUN --mount=type=cache,target=/user/gocache \
+    GOCACHE=/user/gocache CGO_ENABLED=1 \
+    go build -o /user/bin/ ./cmd/...
 
 
-FROM alpine:3.20.1 AS runner
+FROM debian:bookworm-slim AS runner
+
+WORKDIR /user/
+
+# Install external dependencies.
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      libsqlite3-0 \
+ && rm -rf /var/lib/apt/lists/*
+
+# Prepare the user environment.
 
 ENV UID=1000 GID=1000 HOME=/user
-ENV BIN=/user/bin PATH="${BIN}:${PATH}"
-RUN addgroup -S -g "$GID" user \
- && adduser -S -u "$UID" -h "$HOME" -s /bin/sh user user \
- && mkdir -p "$BIN" \
- && chown -R user:user "$HOME"
+ENV PATH="/user/bin:$PATH"
+RUN groupadd --gid "$GID" user \
+ && useradd --uid "$UID" --gid "$GID" --home-dir "$HOME" --shell /bin/bash user \
+ && mkdir -p /user/bin \
+ && mkdir -p /user/data \
+ && chown -R "$UID:$GID" /user
 
-RUN apk add --no-cache curl
+VOLUME /user/data
 
-WORKDIR /user
+# Copy the application.
 
 COPY --from=builder /user/bin/ /user/bin/
 
-USER user
+# Run the application.
+
+USER user:user
