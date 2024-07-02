@@ -19,13 +19,8 @@ import (
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 )
 
-const (
-	maxRetry = 3
-)
-
 var (
-	errUsage             = errors.New("usage")
-	errThumbnailNotFound = errors.New("thumbnail not found")
+	errUsage = errors.New("usage")
 )
 
 var (
