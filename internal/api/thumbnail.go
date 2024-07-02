@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/kirillgashkov/assignment-youthumb/internal/api/errors"
+	"github.com/kirillgashkov/assignment-youthumb/internal/api/errs"
 	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
 	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
@@ -20,7 +20,7 @@ type thumbnailServiceServer struct {
 	cache *cache.Cache
 }
 
-func (*thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youthumbpb.ThumbnailService_GetThumbnailServer) error {
+func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youthumbpb.ThumbnailService_GetThumbnailServer) error {
 	if req.VideoUrl == "" {
 		return status.Errorf(codes.InvalidArgument, "video URL is required")
 	}
@@ -32,7 +32,7 @@ func (*thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest,
 
 	resp, err := http.Get(thumbnailURL)
 	if err != nil {
-		return errors.ErrGRPCInternal
+		return errs.ErrGRPCInternal
 	}
 	defer func(resp *http.Response) {
 		if err := resp.Body.Close(); err != nil {
@@ -44,11 +44,11 @@ func (*thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest,
 		if resp.StatusCode == http.StatusNotFound {
 			return status.Errorf(codes.NotFound, "video or thumbnail not found")
 		}
-		return errors.ErrGRPCInternal
+		return errs.ErrGRPCInternal
 	}
 
 	if err := stream.Send(&youthumbpb.ThumbnailChunk{ContentType: resp.Header.Get("Content-Type")}); err != nil {
-		return errors.ErrGRPCInternal
+		return errs.ErrGRPCInternal
 	}
 
 	buf := make([]byte, maxChunkSize)
@@ -58,11 +58,11 @@ func (*thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest,
 			break
 		}
 		if err != nil {
-			return errors.ErrGRPCInternal
+			return errs.ErrGRPCInternal
 		}
 
 		if err := stream.Send(&youthumbpb.ThumbnailChunk{Data: buf[:n]}); err != nil {
-			return errors.ErrGRPCInternal
+			return errs.ErrGRPCInternal
 		}
 
 		buf = make([]byte, maxChunkSize)
