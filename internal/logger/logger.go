@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/config"
+	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
 )
 
 func New(cfg *config.Config) (*slog.Logger, error) {

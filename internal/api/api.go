@@ -2,8 +2,8 @@ package api
 
 import (
 	"github.com/kirillgashkov/assignment-youthumb/internal/api/interceptor"
+	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
 	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
-	"github.com/kirillgashkov/assignment-youthumb/internal/config"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
