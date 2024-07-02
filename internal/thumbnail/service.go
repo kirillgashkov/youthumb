@@ -14,6 +14,12 @@ const (
 	maxChunkSize = 64 * 1024
 )
 
+var (
+	errStatusMissingVideoURL = status.Errorf(codes.InvalidArgument, "video URL is required")
+	errStatusInvalidVideoURL = status.Errorf(codes.InvalidArgument, "video URL is invalid")
+	errStatusNotFound        = status.Errorf(codes.NotFound, "video or thumbnail not found")
+)
+
 type Service struct {
 	youthumbpb.UnimplementedThumbnailServiceServer
 	cache *Cache
@@ -25,16 +31,16 @@ func NewService(cache *Cache) *Service {
 
 func (s *Service) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youthumbpb.ThumbnailService_GetThumbnailServer) error {
 	if req.VideoUrl == "" {
-		return status.Errorf(codes.InvalidArgument, "video URL is required")
+		return errStatusMissingVideoURL
 	}
 
 	videoID, err := ParseVideoID(req.VideoUrl)
 	if err != nil {
-		return status.Errorf(codes.InvalidArgument, "video URL is invalid")
+		return errStatusInvalidVideoURL
 	}
 	thumbnailURL, err := URLFromVideoURL(req.VideoUrl)
 	if err != nil {
-		return status.Errorf(codes.InvalidArgument, "video URL is invalid")
+		return errStatusInvalidVideoURL
 	}
 
 	t, err := s.cache.GetThumbnail(videoID)
@@ -55,6 +61,15 @@ func (s *Service) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youth
 		return message.ErrStatusInternal
 	}
 
+	if err := send(stream, t); err != nil {
+		return message.ErrStatusInternal
+	}
+
+	return nil
+}
+
+// send sends the thumbnail data to the client in chunks.
+func send(stream youthumbpb.ThumbnailService_GetThumbnailServer, t *Thumbnail) error {
 	contentTypeSent := false
 	for i := 0; i < len(t.Data); i += maxChunkSize {
 		end := i + maxChunkSize
