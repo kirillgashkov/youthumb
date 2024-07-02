@@ -8,18 +8,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var (
-	// ErrCacheNotFound is returned when the thumbnail is not found in the
-	// cache.
-	ErrCacheNotFound = errors.New("thumbnail not found")
-)
-
-// CacheThumbnail represents a thumbnail image.
-type CacheThumbnail struct {
-	ContentType string
-	Data        []byte
-}
-
 // Cache is a key-value cache for thumbnails with expiration.
 type Cache struct {
 	// Path to the SQLite database file.
@@ -56,25 +44,25 @@ func (c *Cache) Close() error {
 }
 
 // GetThumbnail returns the thumbnail for the given video ID from the cache.
-func (c *Cache) GetThumbnail(videoID string) (*CacheThumbnail, error) {
+func (c *Cache) GetThumbnail(videoID string) (*Thumbnail, error) {
 	query := `SELECT content_type, data FROM cache WHERE video_id = ? AND expires_at > ?`
 
 	var contentType string
 	var data []byte
 	err := c.db.QueryRow(query, videoID, time.Now().Unix()).Scan(&contentType, &data)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, ErrCacheNotFound
+		return nil, errNotFound
 	}
 	if err != nil {
 		return nil, err
 	}
 
-	return &CacheThumbnail{ContentType: contentType, Data: data}, nil
+	return &Thumbnail{ContentType: contentType, Data: data}, nil
 }
 
 // SetThumbnail sets the thumbnail for the given video ID in the cache with the
 // given expiration time.
-func (c *Cache) SetThumbnail(videoID string, t *CacheThumbnail, expiration time.Time) error {
+func (c *Cache) SetThumbnail(videoID string, t *Thumbnail, expiration time.Time) error {
 	query := `INSERT OR REPLACE INTO cache (video_id, content_type, data, expires_at) VALUES (?, ?, ?, ?)`
 	_, err := c.db.Exec(query, videoID, t.ContentType, t.Data, expiration.Unix())
 	return err

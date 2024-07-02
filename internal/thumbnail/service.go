@@ -15,10 +15,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// maxChunkSize is the max size of the chunks that are sent to the client.
-const maxChunkSize = 64 * 1024
-
-var errThumbnailNotFound = errors.New("thumbnail not found")
+const (
+	// maxChunkSize is the max size of the chunks that are sent to the client.
+	maxChunkSize = 64 * 1024
+)
 
 type Service struct {
 	youthumbpb.UnimplementedThumbnailServiceServer
@@ -44,10 +44,10 @@ func (s *Service) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youth
 	}
 
 	t, err := s.cache.GetThumbnail(videoID)
-	if errors.Is(err, ErrCacheNotFound) {
+	if errors.Is(err, errNotFound) {
 		downloadedThumbnail, expirationTime, err := downloadThumbnail(thumbnailURL)
 		if err != nil {
-			if errors.Is(err, errThumbnailNotFound) {
+			if errors.Is(err, errNotFound) {
 				return status.Errorf(codes.NotFound, "video or thumbnail not found")
 			}
 			return message.ErrStatusInternal
@@ -85,7 +85,7 @@ func (s *Service) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youth
 	return nil
 }
 
-func downloadThumbnail(thumbnailURL string) (*CacheThumbnail, time.Time, error) {
+func downloadThumbnail(thumbnailURL string) (*Thumbnail, time.Time, error) {
 	resp, err := http.Get(thumbnailURL)
 	if err != nil {
 		return nil, time.Time{}, err
@@ -98,7 +98,7 @@ func downloadThumbnail(thumbnailURL string) (*CacheThumbnail, time.Time, error) 
 
 	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusNotFound {
-			return nil, time.Time{}, errThumbnailNotFound
+			return nil, time.Time{}, errNotFound
 		}
 		return nil, time.Time{}, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
@@ -114,7 +114,7 @@ func downloadThumbnail(thumbnailURL string) (*CacheThumbnail, time.Time, error) 
 		return nil, time.Time{}, err
 	}
 
-	t := &CacheThumbnail{
+	t := &Thumbnail{
 		ContentType: resp.Header.Get("Content-Type"), Data: []byte(sb.String()),
 	}
 
