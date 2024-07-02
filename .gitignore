@@ -1,6 +1,7 @@
 .*
 *~
 
+!/.github
 !/.gitignore
 !/.golangci.yaml
 !/.mise.toml
