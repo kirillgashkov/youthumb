@@ -9,8 +9,11 @@ import (
 	"github.com/kirillgashkov/assignment-youthumb/internal/config"
 	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
+	"io"
 	"log/slog"
+	"mime"
 	"os"
+	"path/filepath"
 	"sync"
 )
 
@@ -21,7 +24,6 @@ const (
 var (
 	errUsage             = errors.New("usage")
 	errThumbnailNotFound = errors.New("thumbnail not found")
-	errCanceled          = errors.New("canceled")
 )
 
 var (
@@ -87,20 +89,26 @@ func mainErr() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	wg := sync.WaitGroup{}
-	defer wg.Wait()
+	downloader := newThumbnailDownloader(cli, *outputDir)
 
-	for _, videoURL := range flag.Args() {
-		if *isAsync {
-			wg.Add(1)
-			go func() { // https://go.dev/blog/loopvar-preview
-				defer wg.Done()
-				if err := downloadThumbnail(ctx, cli, videoURL, *outputDir); err != nil {
-					slog.Error("failed to download thumbnail", "video_url", videoURL, "error", err)
-				}
-			}()
-		} else {
-			if err := downloadThumbnail(ctx, cli, videoURL, *outputDir); err != nil {
+	if *isAsync {
+		func() {
+			wg := sync.WaitGroup{}
+			defer wg.Wait()
+
+			for _, videoURL := range flag.Args() {
+				wg.Add(1)
+				go func() { // https://go.dev/blog/loopvar-preview
+					defer wg.Done()
+					if err := downloader.DownloadThumbnail(ctx, videoURL); err != nil {
+						slog.Error("failed to download thumbnail", "video_url", videoURL, "error", err)
+					}
+				}()
+			}
+		}()
+	} else {
+		for _, videoURL := range flag.Args() {
+			if err := downloader.DownloadThumbnail(ctx, videoURL); err != nil {
 				slog.Error("failed to download thumbnail", "video_url", videoURL, "error", err)
 			}
 		}
@@ -109,28 +117,84 @@ func mainErr() error {
 	return nil
 }
 
-func downloadThumbnail(ctx context.Context, cli youthumbpb.ThumbnailServiceClient, videoURL, outputDir string) error {
-	retry := 0
-	for {
-		if err := downloadThumbnailOnce(ctx, cli, videoURL, outputDir); err != nil {
-			if errors.Is(err, errCanceled) {
-				return err
-			}
-			if errors.Is(err, errThumbnailNotFound) {
-				return err
-			}
-			if retry == maxRetry {
-				return err
-			}
-			retry++
-			slog.Warn("retrying thumbnail download", "video_url", videoURL, "retry", retry, "error", err)
-			continue
-		}
-		return nil
-	}
+func newThumbnailDownloader(cli youthumbpb.ThumbnailServiceClient, outputDir string) *thumbnailDownloader {
+	return &thumbnailDownloader{cli: cli, outputDir: outputDir, muCh: make(chan struct{}, 1)}
 }
 
-func downloadThumbnailOnce(ctx context.Context, cli youthumbpb.ThumbnailServiceClient, videoURL, outputDir string) error {
-	slog.Info("downloading thumbnail", "video_url", videoURL)
+type thumbnailDownloader struct {
+	cli       youthumbpb.ThumbnailServiceClient
+	outputDir string
+	muCh      chan struct{}
+}
+
+func (d *thumbnailDownloader) DownloadThumbnail(ctx context.Context, videoURL string) error {
+	contentFile, err := os.CreateTemp("", "thumbnail-*")
+	if err != nil {
+		return err
+	}
+	defer func(contentFile *os.File) {
+		if err := contentFile.Close(); err != nil && !errors.Is(err, os.ErrClosed) {
+			slog.Error("failed to close file", "error", err)
+		}
+	}(contentFile)
+
+	stream, err := d.cli.GetThumbnail(ctx, &youthumbpb.GetThumbnailRequest{VideoUrl: videoURL})
+	if err != nil {
+		return err
+	}
+
+	contentType := ""
+	for {
+		chunk, err := stream.Recv()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		if chunk.ContentType != "" {
+			contentType = chunk.ContentType
+		}
+
+		if _, err := contentFile.Write(chunk.Data); err != nil {
+			return err
+		}
+	}
+
+	if err := contentFile.Close(); err != nil {
+		return err
+	}
+
+	extension := ""
+	if contentType != "" {
+		extensions, err := mime.ExtensionsByType(contentType)
+		if err != nil {
+			slog.Error("failed to get extensions by type", "content_type", contentType, "error", err)
+		}
+
+		if len(extensions) != 0 {
+			// Last extension appears to be the most common one.
+			extension = extensions[len(extensions)-1]
+		}
+	}
+
+	select {
+	case d.muCh <- struct{}{}:
+		func() {
+			defer func() {
+				<-d.muCh
+			}()
+
+			outputFilePath := filepath.Join(d.outputDir, ""+extension)
+
+			if err := os.Rename(contentFile.Name(), outputFilePath); err != nil {
+				slog.Error("failed to rename file", "error", err)
+			}
+		}()
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+
 	return nil
 }
