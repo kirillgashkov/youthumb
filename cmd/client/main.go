@@ -16,7 +16,6 @@ import (
 
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/client"
 	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 )
@@ -79,12 +78,12 @@ func mainErr() error {
 	}
 	slog.SetDefault(logger)
 
-	clientConn, err := client.NewClient(cfg.GRPC)
+	clientConn, err := newClient(cfg.GRPC)
 	if err != nil {
 		return err
 	}
 
-	cli, err := client.NewThumbnailServiceClient(clientConn)
+	cli, err := newThumbnailServiceClient(clientConn)
 	if err != nil {
 		return err
 	}
