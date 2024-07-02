@@ -2,11 +2,12 @@ package thumbnail
 
 import (
 	"errors"
+	"log/slog"
+
 	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/message"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log/slog"
 )
 
 const (
