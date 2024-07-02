@@ -199,6 +199,11 @@ func (d *thumbnailDownloader) DownloadThumbnail(ctx context.Context, videoURL st
 
 			outputFilePath := filepath.Join(d.outputDir, videoID+extension)
 
+			if err := os.MkdirAll(d.outputDir, 0755); err != nil {
+				slog.Error("failed to create directory", "output_dir", d.outputDir, "error", err)
+				return
+			}
+
 			if err := os.Rename(contentFile.Name(), outputFilePath); err != nil {
 				slog.Error("failed to rename file", "error", err)
 			}
