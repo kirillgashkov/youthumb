@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"runtime/debug"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/errs"
+	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/message"
 	"google.golang.org/grpc"
 )
 
@@ -16,7 +16,7 @@ func NewUnaryServerRecover() grpc.UnaryServerInterceptor {
 		defer func() {
 			if p := recover(); p != nil {
 				slog.Error("unary caught panic", "method", info.FullMethod, "panic", p, "stack", string(debug.Stack()))
-				resp, err = nil, errs.ErrGRPCInternal
+				resp, err = nil, message.ErrGRPCInternal
 			}
 		}()
 		resp, err = handler(ctx, req)
@@ -31,7 +31,7 @@ func NewStreamServerRecover() grpc.StreamServerInterceptor {
 		defer func() {
 			if p := recover(); p != nil {
 				slog.Error("stream caught panic", "method", info.FullMethod, "panic", p, "stack", string(debug.Stack()))
-				err = errs.ErrGRPCInternal
+				err = message.ErrGRPCInternal
 			}
 		}()
 		err = handler(srv, ss)

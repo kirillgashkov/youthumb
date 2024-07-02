@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/errs"
+	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/message"
 	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc/codes"
@@ -47,7 +47,7 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 			if errors.Is(err, errThumbnailNotFound) {
 				return status.Errorf(codes.NotFound, "video or thumbnail not found")
 			}
-			return errs.ErrGRPCInternal
+			return message.ErrGRPCInternal
 		}
 		t = downloadedThumbnail
 
@@ -55,7 +55,7 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 			slog.Error("failed to set thumbnail in cache", "error", err)
 		}
 	} else if err != nil {
-		return errs.ErrGRPCInternal
+		return message.ErrGRPCInternal
 	}
 
 	contentTypeSent := false
