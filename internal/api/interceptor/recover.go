@@ -2,10 +2,11 @@ package interceptor
 
 import (
 	"context"
-	"github.com/kirillgashkov/assignment-youthumb/internal/api/errs"
-	"google.golang.org/grpc"
 	"log/slog"
 	"runtime/debug"
+
+	"github.com/kirillgashkov/assignment-youthumb/internal/api/errs"
+	"google.golang.org/grpc"
 )
 
 // NewUnaryServerRecover returns a new unary server interceptor that recovers

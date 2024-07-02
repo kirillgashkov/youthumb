@@ -3,17 +3,18 @@ package api
 import (
 	"errors"
 	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/kirillgashkov/assignment-youthumb/internal/api/errs"
 	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
 	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"io"
-	"log/slog"
-	"net/http"
-	"strings"
-	"time"
 )
 
 // maxChunkSize is the max size of the chunks that are sent to the client.

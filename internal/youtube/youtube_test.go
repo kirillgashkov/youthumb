@@ -1,8 +1,9 @@
 package youtube_test
 
 import (
-	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
 	"testing"
+
+	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
 )
 
 func TestThumbnailURLFromVideoURL(t *testing.T) {

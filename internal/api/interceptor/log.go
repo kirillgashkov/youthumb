@@ -2,8 +2,9 @@ package interceptor
 
 import (
 	"context"
-	"google.golang.org/grpc"
 	"log/slog"
+
+	"google.golang.org/grpc"
 )
 
 // NewUnaryServerLog returns a new unary server interceptor that logs completed

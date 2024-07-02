@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log/slog"
+	"net"
+	"os"
+
 	"github.com/kirillgashkov/assignment-youthumb/internal/api"
 	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
 	"github.com/kirillgashkov/assignment-youthumb/internal/config"
 	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
-	"log/slog"
-	"net"
-	"os"
 )
 
 var (

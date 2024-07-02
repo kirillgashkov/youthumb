@@ -1,11 +1,12 @@
 package client
 
 import (
+	"net/netip"
+
 	"github.com/kirillgashkov/assignment-youthumb/internal/config"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"net/netip"
 )
 
 // NewClient creates a new gRPC client.

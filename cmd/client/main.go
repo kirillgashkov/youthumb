@@ -5,17 +5,18 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/kirillgashkov/assignment-youthumb/internal/api/client"
-	"github.com/kirillgashkov/assignment-youthumb/internal/config"
-	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
-	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
-	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"io"
 	"log/slog"
 	"mime"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/kirillgashkov/assignment-youthumb/internal/api/client"
+	"github.com/kirillgashkov/assignment-youthumb/internal/config"
+	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
+	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
+	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 )
 
 const (
