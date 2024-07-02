@@ -30,3 +30,27 @@ message ThumbnailChunk {
 увидеть в тесте [`internal/thumbnail/url_test.go`](internal/thumbnail/url_test.go).
 
 Полное определение сервиса и документация в файле [`proto/youthumb/v1/youthumb.proto`](proto/youthumb/v1/youthumb.proto).
+
+## Архитектура
+
+Две точки входа:
+
+- [`cmd/server`](cmd/server) - точка входа для запуска gRPC сервера.
+- [`cmd/client`](cmd/client) - пример gRPC клиента для отправки запросов на сервер.
+
+Основной пакет с бизнес-логикой:
+
+- [`internal/thumbnail`](internal/thumbnail) - пакет с бизнес-логикой сервиса и
+  реализацией gRPC сервера.
+
+Вспомогательныe пакеты для gRPC:
+
+- [`internal/rpc`](internal/rpc) - пакет с основным конструктором gRPC сервера.
+- [`internal/rpc/interceptor`](internal/rpc/interceptor) - пакет с middleware для gRPC сервера.
+- [`internal/rpc/message`](internal/rpc/message) - пакет с общими сообщениями для gRPC сервера.
+
+Вспомогательныe пакеты для приложения:
+
+- [`internal/app`](internal/app) - пакет с общими компонентами приложения.
+- [`internal/app/config`](internal/app/config) - пакет с конфигурацией приложения.
+- [`internal/app/log`](internal/app/log) - пакет с логгером приложения.
