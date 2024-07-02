@@ -12,10 +12,11 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/kirillgashkov/assignment-youthumb/internal/app/logger"
+
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
 
 	"github.com/kirillgashkov/assignment-youthumb/internal/api/client"
-	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
 	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 )

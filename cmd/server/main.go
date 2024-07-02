@@ -7,11 +7,12 @@ import (
 	"net"
 	"os"
 
+	"github.com/kirillgashkov/assignment-youthumb/internal/app/logger"
+
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
 
 	"github.com/kirillgashkov/assignment-youthumb/internal/api"
 	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
-	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
 )
 
 var (
