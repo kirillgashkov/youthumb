@@ -2,9 +2,10 @@ package logger
 
 import (
 	"fmt"
-	"github.com/kirillgashkov/assignment-youthumb/internal/config"
 	"log/slog"
 	"os"
+
+	"github.com/kirillgashkov/assignment-youthumb/internal/config"
 )
 
 func New(cfg *config.Config) (*slog.Logger, error) {

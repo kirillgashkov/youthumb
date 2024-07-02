@@ -1,0 +1,45 @@
+services:
+  server:
+    build: .
+    entrypoint: ["server"]
+    env_file:
+      - example.env
+    environment:
+      - APP_GRPC_HOST=0.0.0.0
+      - APP_GRPC_PORT=50051
+    ports:
+      - "50051:50051"
+    volumes:
+      - server-data:/user/data
+
+  client:
+    build: .
+    entrypoint: ["client"]
+    working_dir: /user/data
+    env_file:
+      - example.env
+    environment:
+      - APP_GRPC_HOST=server
+      - APP_GRPC_PORT=50051
+    volumes:
+      - client-data:/user/data
+    profiles:
+      - client
+
+  client-bash:
+    build: .
+    entrypoint: ["bash"]
+    working_dir: /user/data
+    env_file:
+      - example.env
+    environment:
+      - APP_GRPC_HOST=server
+      - APP_GRPC_PORT=50051
+    volumes:
+      - client-data:/user/data
+    profiles:
+      - client
+
+volumes:
+    server-data:
+    client-data:

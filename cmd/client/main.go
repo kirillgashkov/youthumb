@@ -5,26 +5,22 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/kirillgashkov/assignment-youthumb/internal/api/client"
-	"github.com/kirillgashkov/assignment-youthumb/internal/config"
-	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
-	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
-	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"io"
 	"log/slog"
 	"mime"
 	"os"
 	"path/filepath"
 	"sync"
-)
 
-const (
-	maxRetry = 3
+	"github.com/kirillgashkov/assignment-youthumb/internal/api/client"
+	"github.com/kirillgashkov/assignment-youthumb/internal/config"
+	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
+	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
+	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 )
 
 var (
-	errUsage             = errors.New("usage")
-	errThumbnailNotFound = errors.New("thumbnail not found")
+	errUsage = errors.New("usage")
 )
 
 var (

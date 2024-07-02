@@ -1,8 +1,9 @@
 package youtube_test
 
 import (
-	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
 	"testing"
+
+	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
 )
 
 func TestThumbnailURLFromVideoURL(t *testing.T) {
@@ -12,9 +13,9 @@ func TestThumbnailURLFromVideoURL(t *testing.T) {
 		want     string
 		wantErr  bool
 	}{
-		{name: "www.youtube.com", videoURL: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", want: "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"},
-		{name: "youtube.com", videoURL: "https://youtube.com/watch?v=dQw4w9WgXcQ", want: "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"},
-		{name: "youtu.be", videoURL: "https://youtu.be/dQw4w9WgXcQ", want: "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"},
+		{name: "www.youtube.com", videoURL: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", want: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"},
+		{name: "youtube.com", videoURL: "https://youtube.com/watch?v=dQw4w9WgXcQ", want: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"},
+		{name: "youtu.be", videoURL: "https://youtu.be/dQw4w9WgXcQ", want: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"},
 		{name: "invalid", videoURL: "https://example.com/watch?v=dQw4w9WgXcQ", wantErr: true},
 		{name: "empty", videoURL: "", wantErr: true},
 	}
