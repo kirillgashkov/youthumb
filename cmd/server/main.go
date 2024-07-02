@@ -7,42 +7,32 @@ import (
 	"net"
 	"os"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
-
-	"github.com/kirillgashkov/assignment-youthumb/internal/app/log"
-
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
-
+	"github.com/kirillgashkov/assignment-youthumb/internal/app/log"
 	"github.com/kirillgashkov/assignment-youthumb/internal/rpc"
+	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
 )
 
 var (
-	cachePath = flag.String("cache", "", "Path to the cache SQLite database.")
+	dsn = flag.String("d", ":memory:", "Path to the SQLite database.")
 )
 
-func usage() {
-	fmt.Fprintf(flag.CommandLine.Output(), `Usage: %s [OPTIONS]
-
-Starts the server.
-
-Options:
-`, os.Args[0])
-	flag.PrintDefaults()
-}
-
 func main() {
-	if err := mainErr(); err != nil {
-		panic(err)
-	}
-}
-
-func mainErr() error {
 	flag.Usage = usage
 	flag.Parse()
 
-	if *cachePath == "" {
-		return fmt.Errorf("cache path is required, see -help")
+	if err := mainErr(); err != nil {
+		s := fmt.Sprintf("fatal error: %v", err)
+		if _, err := fmt.Fprintln(flag.CommandLine.Output(), s); err != nil {
+			panic(err)
+		}
+		os.Exit(1)
 	}
+	os.Exit(0)
+}
+
+func mainErr() error {
+	// Prepare configuration and logging.
 
 	cfg, err := config.New()
 	if err != nil {
@@ -55,17 +45,21 @@ func mainErr() error {
 	}
 	slog.SetDefault(logger)
 
-	cch, err := thumbnail.OpenCache(*cachePath)
+	// Prepare cache.
+
+	c, err := thumbnail.OpenCache(*dsn)
 	if err != nil {
 		return err
 	}
-	defer func(cch *thumbnail.Cache) {
-		if err := cch.Close(); err != nil {
+	defer func(c *thumbnail.Cache) {
+		if err := c.Close(); err != nil {
 			slog.Error("failed to close cache", "error", err)
 		}
-	}(cch)
+	}(c)
 
-	srv := rpc.NewServer(cch, cfg)
+	// Create and start the server.
+
+	srv := rpc.NewServer(c, cfg)
 
 	addr := &net.TCPAddr{IP: net.ParseIP(cfg.GRPC.Host), Port: cfg.GRPC.Port}
 	lis, err := net.ListenTCP("tcp", addr)
@@ -76,4 +70,19 @@ func mainErr() error {
 	slog.Info("starting server", "addr", addr, "mode", cfg.Mode)
 	err = srv.Serve(lis)
 	return err
+}
+
+func usage() {
+	u := fmt.Sprintf(`Usage: %s [OPTIONS]
+
+A server for proxying YouTube video thumbnails. It downloads thumbnails from
+YouTube, caches them in a SQLite database and serves them via gRPC.
+
+Options:
+`, os.Args[0])
+
+	if _, err := fmt.Fprint(flag.CommandLine.Output(), u); err != nil {
+		panic(err)
+	}
+	flag.PrintDefaults()
 }
