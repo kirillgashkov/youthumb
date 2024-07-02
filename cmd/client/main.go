@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/app/logger"
+	"github.com/kirillgashkov/assignment-youthumb/internal/app/log"
 
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
 
@@ -73,11 +73,11 @@ func mainErr() error {
 		return err
 	}
 
-	log, err := logger.NewLogger(cfg)
+	logger, err := log.NewLogger(cfg)
 	if err != nil {
 		return err
 	}
-	slog.SetDefault(log)
+	slog.SetDefault(logger)
 
 	clientConn, err := client.NewClientConn(cfg.GRPC)
 	if err != nil {
