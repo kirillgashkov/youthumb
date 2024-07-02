@@ -42,7 +42,7 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 	}
 
 	t, err := s.cache.GetThumbnail(videoID)
-	if errors.Is(err, cache.ErrNotFound) {
+	if errors.Is(err, cache.ErrCacheNotFound) {
 		downloadedThumbnail, expirationTime, err := downloadThumbnail(thumbnailURL)
 		if err != nil {
 			if errors.Is(err, errThumbnailNotFound) {
@@ -83,7 +83,7 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 	return nil
 }
 
-func downloadThumbnail(thumbnailURL string) (*cache.Thumbnail, time.Time, error) {
+func downloadThumbnail(thumbnailURL string) (*cache.CacheThumbnail, time.Time, error) {
 	resp, err := http.Get(thumbnailURL)
 	if err != nil {
 		return nil, time.Time{}, err
@@ -112,7 +112,7 @@ func downloadThumbnail(thumbnailURL string) (*cache.Thumbnail, time.Time, error)
 		return nil, time.Time{}, err
 	}
 
-	t := &cache.Thumbnail{
+	t := &cache.CacheThumbnail{
 		ContentType: resp.Header.Get("Content-Type"), Data: []byte(sb.String()),
 	}
 

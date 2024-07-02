@@ -54,7 +54,7 @@ func mainErr() error {
 	}
 	slog.SetDefault(logger)
 
-	cch, err := cache.Open(*cachePath)
+	cch, err := cache.OpenCache(*cachePath)
 	if err != nil {
 		return err
 	}
