@@ -25,7 +25,7 @@ func NewServer(cch *thumbnail.Cache, cfg *config.Config) *grpc.Server {
 	if cfg.Mode == config.ModeDevelopment {
 		reflection.Register(srv)
 	}
-	youthumbpb.RegisterThumbnailServiceServer(srv, &thumbnail.ThumbnailServiceServer{Cache: cch})
+	youthumbpb.RegisterThumbnailServiceServer(srv, &thumbnail.Service{Cache: cch})
 
 	return srv
 }

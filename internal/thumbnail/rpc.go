@@ -20,12 +20,12 @@ const maxChunkSize = 64 * 1024
 
 var errThumbnailNotFound = errors.New("thumbnail not found")
 
-type ThumbnailServiceServer struct {
+type Service struct {
 	youthumbpb.UnimplementedThumbnailServiceServer
 	Cache *Cache
 }
 
-func (s *ThumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youthumbpb.ThumbnailService_GetThumbnailServer) error {
+func (s *Service) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youthumbpb.ThumbnailService_GetThumbnailServer) error {
 	if req.VideoUrl == "" {
 		return status.Errorf(codes.InvalidArgument, "video URL is required")
 	}
