@@ -1,22 +1,23 @@
-package client
+package main
 
 import (
 	"net/netip"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/config"
+	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
+
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// NewClient creates a new gRPC client.
-func NewClient(conn *grpc.ClientConn) (youthumbpb.ThumbnailServiceClient, error) {
+// newThumbnailServiceClient creates a new gRPC client.
+func newThumbnailServiceClient(conn *grpc.ClientConn) (youthumbpb.ThumbnailServiceClient, error) {
 	return youthumbpb.NewThumbnailServiceClient(conn), nil
 }
 
-// NewClientConn creates a new gRPC client connection. Caller is responsible for
+// newClient creates a new gRPC client connection. Caller is responsible for
 // closing the connection.
-func NewClientConn(cfg config.GRPCConfig) (*grpc.ClientConn, error) {
+func newClient(cfg config.GRPCConfig) (*grpc.ClientConn, error) {
 	addr, err := netip.ParseAddr(cfg.Host)
 	if err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-package api
+package rpc
 
 import (
 	"errors"
@@ -9,9 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/api/errs"
-	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
-	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
+	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/message"
+	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -24,7 +23,7 @@ var errThumbnailNotFound = errors.New("thumbnail not found")
 
 type thumbnailServiceServer struct {
 	youthumbpb.UnimplementedThumbnailServiceServer
-	cache *cache.Cache
+	cache *thumbnail.Cache
 }
 
 func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youthumbpb.ThumbnailService_GetThumbnailServer) error {
@@ -32,44 +31,44 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 		return status.Errorf(codes.InvalidArgument, "video URL is required")
 	}
 
-	videoID, err := youtube.ParseVideoID(req.VideoUrl)
+	videoID, err := thumbnail.ParseVideoID(req.VideoUrl)
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "video URL is invalid")
 	}
-	thumbnailURL, err := youtube.ThumbnailURLFromVideoURL(req.VideoUrl)
+	thumbnailURL, err := thumbnail.ThumbnailURLFromVideoURL(req.VideoUrl)
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "video URL is invalid")
 	}
 
-	thumbnail, err := s.cache.GetThumbnail(videoID)
-	if errors.Is(err, cache.ErrNotFound) {
+	t, err := s.cache.GetThumbnail(videoID)
+	if errors.Is(err, thumbnail.ErrCacheNotFound) {
 		downloadedThumbnail, expirationTime, err := downloadThumbnail(thumbnailURL)
 		if err != nil {
 			if errors.Is(err, errThumbnailNotFound) {
 				return status.Errorf(codes.NotFound, "video or thumbnail not found")
 			}
-			return errs.ErrGRPCInternal
+			return message.ErrGRPCInternal
 		}
-		thumbnail = downloadedThumbnail
+		t = downloadedThumbnail
 
 		if err := s.cache.SetThumbnail(videoID, downloadedThumbnail, expirationTime); err != nil {
 			slog.Error("failed to set thumbnail in cache", "error", err)
 		}
 	} else if err != nil {
-		return errs.ErrGRPCInternal
+		return message.ErrGRPCInternal
 	}
 
 	contentTypeSent := false
-	for i := 0; i < len(thumbnail.Data); i += maxChunkSize {
+	for i := 0; i < len(t.Data); i += maxChunkSize {
 		end := i + maxChunkSize
-		if end > len(thumbnail.Data) {
-			end = len(thumbnail.Data)
+		if end > len(t.Data) {
+			end = len(t.Data)
 		}
 
-		chunkData := thumbnail.Data[i:end]
+		chunkData := t.Data[i:end]
 		var thumbnailChunk *youthumbpb.ThumbnailChunk
 		if !contentTypeSent {
-			thumbnailChunk = &youthumbpb.ThumbnailChunk{Data: chunkData, ContentType: thumbnail.ContentType}
+			thumbnailChunk = &youthumbpb.ThumbnailChunk{Data: chunkData, ContentType: t.ContentType}
 			contentTypeSent = true
 		} else {
 			thumbnailChunk = &youthumbpb.ThumbnailChunk{Data: chunkData}
@@ -83,7 +82,7 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 	return nil
 }
 
-func downloadThumbnail(thumbnailURL string) (*cache.Thumbnail, time.Time, error) {
+func downloadThumbnail(thumbnailURL string) (*thumbnail.CacheThumbnail, time.Time, error) {
 	resp, err := http.Get(thumbnailURL)
 	if err != nil {
 		return nil, time.Time{}, err
@@ -112,9 +111,9 @@ func downloadThumbnail(thumbnailURL string) (*cache.Thumbnail, time.Time, error)
 		return nil, time.Time{}, err
 	}
 
-	thumbnail := &cache.Thumbnail{
+	t := &thumbnail.CacheThumbnail{
 		ContentType: resp.Header.Get("Content-Type"), Data: []byte(sb.String()),
 	}
 
-	return thumbnail, expirationTime, nil
+	return t, expirationTime, nil
 }

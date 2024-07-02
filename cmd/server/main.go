@@ -7,10 +7,13 @@ import (
 	"net"
 	"os"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/api"
-	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
-	"github.com/kirillgashkov/assignment-youthumb/internal/config"
-	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
+	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
+
+	"github.com/kirillgashkov/assignment-youthumb/internal/app/log"
+
+	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
+
+	"github.com/kirillgashkov/assignment-youthumb/internal/rpc"
 )
 
 var (
@@ -46,23 +49,23 @@ func mainErr() error {
 		return err
 	}
 
-	log, err := logger.New(cfg)
+	logger, err := log.NewLogger(cfg)
 	if err != nil {
 		return err
 	}
-	slog.SetDefault(log)
+	slog.SetDefault(logger)
 
-	cch, err := cache.Open(*cachePath)
+	cch, err := thumbnail.OpenCache(*cachePath)
 	if err != nil {
 		return err
 	}
-	defer func(cch *cache.Cache) {
+	defer func(cch *thumbnail.Cache) {
 		if err := cch.Close(); err != nil {
 			slog.Error("failed to close cache", "error", err)
 		}
 	}(cch)
 
-	srv := api.NewServer(cch, cfg)
+	srv := rpc.NewServer(cch, cfg)
 
 	addr := &net.TCPAddr{IP: net.ParseIP(cfg.GRPC.Host), Port: cfg.GRPC.Port}
 	lis, err := net.ListenTCP("tcp", addr)

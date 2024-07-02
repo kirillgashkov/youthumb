@@ -12,10 +12,11 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/api/client"
-	"github.com/kirillgashkov/assignment-youthumb/internal/config"
-	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
-	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
+	"github.com/kirillgashkov/assignment-youthumb/internal/app/log"
+
+	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
+
+	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 )
 
@@ -71,18 +72,18 @@ func mainErr() error {
 		return err
 	}
 
-	log, err := logger.New(cfg)
+	logger, err := log.NewLogger(cfg)
 	if err != nil {
 		return err
 	}
-	slog.SetDefault(log)
+	slog.SetDefault(logger)
 
-	clientConn, err := client.NewClientConn(cfg.GRPC)
+	clientConn, err := newClient(cfg.GRPC)
 	if err != nil {
 		return err
 	}
 
-	cli, err := client.NewClient(clientConn)
+	cli, err := newThumbnailServiceClient(clientConn)
 	if err != nil {
 		return err
 	}
@@ -187,7 +188,7 @@ func (d *thumbnailDownloader) DownloadThumbnail(ctx context.Context, videoURL st
 				<-d.muCh
 			}()
 
-			videoID, err := youtube.ParseVideoID(videoURL)
+			videoID, err := thumbnail.ParseVideoID(videoURL)
 			if err != nil {
 				slog.Error("failed to parse video ID", "video_url", videoURL, "error", err)
 				return

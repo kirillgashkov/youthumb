@@ -1,4 +1,4 @@
-package errs
+package message
 
 import (
 	"google.golang.org/grpc/codes"
