@@ -3,15 +3,25 @@ option go_package="github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb
 
 package youthumb.v1;
 
+// ThumbnailChunk represents a chunk of thumbnail data. The content type is
+// a MIME type of the data and is sent only once in the first message.
 message ThumbnailChunk {
+  // content_type is a MIME type of the data.
   string content_type = 1;
+  // data is a chunk of thumbnail data.
   bytes data = 2;
 }
 
+// GetThumbnailRequest represents a request to get a thumbnail of a video.
 message GetThumbnailRequest {
+  // video_url is a URL of the video for which a thumbnail should be sent.
   string video_url = 1;
 }
 
+// ThumbnailService is a service that provides methods to get thumbnails of
+// videos.
 service ThumbnailService {
+  // GetThumbnail returns a stream of ThumbnailChunk messages that represent
+  // a thumbnail of the video at the given URL.
   rpc GetThumbnail(GetThumbnailRequest) returns (stream ThumbnailChunk);
 }

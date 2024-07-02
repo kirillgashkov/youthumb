@@ -20,13 +20,17 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ThumbnailChunk represents a chunk of thumbnail data. The content type is
+// a MIME type of the data and is sent only once in the first message.
 type ThumbnailChunk struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// content_type is a MIME type of the data.
 	ContentType string `protobuf:"bytes,1,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
-	Data        []byte `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	// data is a chunk of thumbnail data.
+	Data []byte `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
 }
 
 func (x *ThumbnailChunk) Reset() {
@@ -75,11 +79,13 @@ func (x *ThumbnailChunk) GetData() []byte {
 	return nil
 }
 
+// GetThumbnailRequest represents a request to get a thumbnail of a video.
 type GetThumbnailRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// video_url is a URL of the video for which a thumbnail should be sent.
 	VideoUrl string `protobuf:"bytes,1,opt,name=video_url,json=videoUrl,proto3" json:"video_url,omitempty"`
 }
 

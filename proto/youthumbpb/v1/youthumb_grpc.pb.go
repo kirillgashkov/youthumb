@@ -25,7 +25,12 @@ const (
 // ThumbnailServiceClient is the client API for ThumbnailService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// ThumbnailService is a service that provides methods to get thumbnails of
+// videos.
 type ThumbnailServiceClient interface {
+	// GetThumbnail returns a stream of ThumbnailChunk messages that represent
+	// a thumbnail of the video at the given URL.
 	GetThumbnail(ctx context.Context, in *GetThumbnailRequest, opts ...grpc.CallOption) (ThumbnailService_GetThumbnailClient, error)
 }
 
@@ -73,7 +78,12 @@ func (x *thumbnailServiceGetThumbnailClient) Recv() (*ThumbnailChunk, error) {
 // ThumbnailServiceServer is the server API for ThumbnailService service.
 // All implementations must embed UnimplementedThumbnailServiceServer
 // for forward compatibility
+//
+// ThumbnailService is a service that provides methods to get thumbnails of
+// videos.
 type ThumbnailServiceServer interface {
+	// GetThumbnail returns a stream of ThumbnailChunk messages that represent
+	// a thumbnail of the video at the given URL.
 	GetThumbnail(*GetThumbnailRequest, ThumbnailService_GetThumbnailServer) error
 	mustEmbedUnimplementedThumbnailServiceServer()
 }
