@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"runtime/debug"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/api/errs"
+	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/errs"
 	"google.golang.org/grpc"
 )
 

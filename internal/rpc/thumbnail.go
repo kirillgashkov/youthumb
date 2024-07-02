@@ -1,4 +1,4 @@
-package api
+package rpc
 
 import (
 	"errors"
@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/api/errs"
 	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
+	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/errs"
 	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc/codes"

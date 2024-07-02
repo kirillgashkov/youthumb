@@ -11,8 +11,8 @@ import (
 
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/api"
 	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
+	"github.com/kirillgashkov/assignment-youthumb/internal/rpc"
 )
 
 var (
@@ -64,7 +64,7 @@ func mainErr() error {
 		}
 	}(cch)
 
-	srv := api.NewServer(cch, cfg)
+	srv := rpc.NewServer(cch, cfg)
 
 	addr := &net.TCPAddr{IP: net.ParseIP(cfg.GRPC.Host), Port: cfg.GRPC.Port}
 	lis, err := net.ListenTCP("tcp", addr)
