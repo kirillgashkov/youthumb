@@ -1,2 +1,2 @@
-// Package interceptor provides gRPC server interceptors.
+// Package interceptor provides gRPC interceptors.
 package interceptor
