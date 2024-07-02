@@ -8,7 +8,7 @@ import (
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
 )
 
-func New(cfg *config.Config) (*slog.Logger, error) {
+func NewLogger(cfg *config.Config) (*slog.Logger, error) {
 	var log *slog.Logger
 
 	switch cfg.Mode {

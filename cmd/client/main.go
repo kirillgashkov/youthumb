@@ -73,7 +73,7 @@ func mainErr() error {
 		return err
 	}
 
-	log, err := logger.New(cfg)
+	log, err := logger.NewLogger(cfg)
 	if err != nil {
 		return err
 	}
