@@ -29,7 +29,7 @@ var (
 
 var (
 	isAsync   = flag.Bool("async", false, "Download thumbnails asynchronously.")
-	outputDir = flag.String("output", "", "Download thumbnails to the specified directory.")
+	outputDir = flag.String("output", "", "Download thumbnails to the specified directory. Required.")
 )
 
 func usage() {
@@ -61,6 +61,10 @@ func main() {
 func mainErr() error {
 	flag.Usage = usage
 	flag.Parse()
+
+	if *outputDir == "" {
+		return errUsage
+	}
 
 	if flag.NArg() == 0 {
 		return errUsage
