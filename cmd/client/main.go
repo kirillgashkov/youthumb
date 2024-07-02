@@ -8,6 +8,7 @@ import (
 	"github.com/kirillgashkov/assignment-youthumb/internal/api/client"
 	"github.com/kirillgashkov/assignment-youthumb/internal/config"
 	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
+	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"io"
 	"log/slog"
@@ -186,7 +187,13 @@ func (d *thumbnailDownloader) DownloadThumbnail(ctx context.Context, videoURL st
 				<-d.muCh
 			}()
 
-			outputFilePath := filepath.Join(d.outputDir, ""+extension)
+			videoID, err := youtube.ParseVideoID(videoURL)
+			if err != nil {
+				slog.Error("failed to parse video ID", "video_url", videoURL, "error", err)
+				return
+			}
+
+			outputFilePath := filepath.Join(d.outputDir, videoID+extension)
 
 			if err := os.Rename(contentFile.Name(), outputFilePath); err != nil {
 				slog.Error("failed to rename file", "error", err)
