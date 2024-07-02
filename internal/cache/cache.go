@@ -23,8 +23,9 @@ type Cache struct {
 	db   *sql.DB
 }
 
-// New creates a new Cache with the given path to the SQLite database file.
-func New(path string) (*Cache, error) {
+// Open opens the cache at the given path. The caller is responsible for
+// closing the cache.
+func Open(path string) (*Cache, error) {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		return nil, err
@@ -43,6 +44,11 @@ func New(path string) (*Cache, error) {
 	}
 
 	return &Cache{Path: path, db: db, getStmt: getStmt, setStmt: setStmt}, nil
+}
+
+// Close closes the cache.
+func (c *Cache) Close() error {
+	return c.db.Close()
 }
 
 // Get returns the thumbnail for the given video ID from the cache.
