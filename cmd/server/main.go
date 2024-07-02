@@ -7,11 +7,12 @@ import (
 	"net"
 	"os"
 
+	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
+
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/log"
 
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
 	"github.com/kirillgashkov/assignment-youthumb/internal/rpc"
 )
 
@@ -54,11 +55,11 @@ func mainErr() error {
 	}
 	slog.SetDefault(logger)
 
-	cch, err := cache.OpenCache(*cachePath)
+	cch, err := thumbnail.OpenCache(*cachePath)
 	if err != nil {
 		return err
 	}
-	defer func(cch *cache.Cache) {
+	defer func(cch *thumbnail.Cache) {
 		if err := cch.Close(); err != nil {
 			slog.Error("failed to close cache", "error", err)
 		}

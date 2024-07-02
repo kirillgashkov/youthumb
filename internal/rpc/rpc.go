@@ -2,15 +2,15 @@ package rpc
 
 import (
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
-	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
 	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/interceptor"
+	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 // NewServer creates a new gRPC server.
-func NewServer(cch *cache.Cache, cfg *config.Config) *grpc.Server {
+func NewServer(cch *thumbnail.Cache, cfg *config.Config) *grpc.Server {
 	srv := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptor.NewUnaryServerLog(),

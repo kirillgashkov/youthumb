@@ -1,6 +1,4 @@
-// Package cache provides a key-value cache for thumbnails with expiration.
-// The cache is backed by an SQLite database.
-package cache
+package thumbnail
 
 import (
 	"database/sql"

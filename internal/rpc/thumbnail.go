@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
 	"github.com/kirillgashkov/assignment-youthumb/internal/rpc/errs"
 	"github.com/kirillgashkov/assignment-youthumb/internal/thumbnail"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
@@ -24,7 +23,7 @@ var errThumbnailNotFound = errors.New("thumbnail not found")
 
 type thumbnailServiceServer struct {
 	youthumbpb.UnimplementedThumbnailServiceServer
-	cache *cache.Cache
+	cache *thumbnail.Cache
 }
 
 func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youthumbpb.ThumbnailService_GetThumbnailServer) error {
@@ -42,7 +41,7 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 	}
 
 	t, err := s.cache.GetThumbnail(videoID)
-	if errors.Is(err, cache.ErrCacheNotFound) {
+	if errors.Is(err, thumbnail.ErrCacheNotFound) {
 		downloadedThumbnail, expirationTime, err := downloadThumbnail(thumbnailURL)
 		if err != nil {
 			if errors.Is(err, errThumbnailNotFound) {
@@ -83,7 +82,7 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 	return nil
 }
 
-func downloadThumbnail(thumbnailURL string) (*cache.CacheThumbnail, time.Time, error) {
+func downloadThumbnail(thumbnailURL string) (*thumbnail.CacheThumbnail, time.Time, error) {
 	resp, err := http.Get(thumbnailURL)
 	if err != nil {
 		return nil, time.Time{}, err
@@ -112,7 +111,7 @@ func downloadThumbnail(thumbnailURL string) (*cache.CacheThumbnail, time.Time, e
 		return nil, time.Time{}, err
 	}
 
-	t := &cache.CacheThumbnail{
+	t := &thumbnail.CacheThumbnail{
 		ContentType: resp.Header.Get("Content-Type"), Data: []byte(sb.String()),
 	}
 
