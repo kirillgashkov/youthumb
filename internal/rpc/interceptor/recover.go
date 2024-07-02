@@ -16,7 +16,7 @@ func NewUnaryServerRecover() grpc.UnaryServerInterceptor {
 		defer func() {
 			if p := recover(); p != nil {
 				slog.Error("unary caught panic", "method", info.FullMethod, "panic", p, "stack", string(debug.Stack()))
-				resp, err = nil, message.ErrGRPCInternal
+				resp, err = nil, message.ErrStatusInternal
 			}
 		}()
 		resp, err = handler(ctx, req)
@@ -31,7 +31,7 @@ func NewStreamServerRecover() grpc.StreamServerInterceptor {
 		defer func() {
 			if p := recover(); p != nil {
 				slog.Error("stream caught panic", "method", info.FullMethod, "panic", p, "stack", string(debug.Stack()))
-				err = message.ErrGRPCInternal
+				err = message.ErrStatusInternal
 			}
 		}()
 		err = handler(srv, ss)

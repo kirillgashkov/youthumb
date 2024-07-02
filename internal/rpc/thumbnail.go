@@ -47,7 +47,7 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 			if errors.Is(err, errThumbnailNotFound) {
 				return status.Errorf(codes.NotFound, "video or thumbnail not found")
 			}
-			return message.ErrGRPCInternal
+			return message.ErrStatusInternal
 		}
 		t = downloadedThumbnail
 
@@ -55,7 +55,7 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 			slog.Error("failed to set thumbnail in cache", "error", err)
 		}
 	} else if err != nil {
-		return message.ErrGRPCInternal
+		return message.ErrStatusInternal
 	}
 
 	contentTypeSent := false

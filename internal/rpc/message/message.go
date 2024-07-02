@@ -1,3 +1,4 @@
+// Package message provides predefined gRPC status errors.
 package message
 
 import (
@@ -5,7 +6,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Predefined gRPC errors that are transmitted to the client.
 var (
-	ErrGRPCInternal = status.Errorf(codes.Internal, "internal server error")
+	// ErrStatusInternal is an internal server error.
+	ErrStatusInternal = status.Errorf(codes.Internal, "internal server error")
 )
