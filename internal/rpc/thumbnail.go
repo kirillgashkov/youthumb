@@ -41,7 +41,7 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 		return status.Errorf(codes.InvalidArgument, "video URL is invalid")
 	}
 
-	thumbnail, err := s.cache.GetThumbnail(videoID)
+	t, err := s.cache.GetThumbnail(videoID)
 	if errors.Is(err, cache.ErrNotFound) {
 		downloadedThumbnail, expirationTime, err := downloadThumbnail(thumbnailURL)
 		if err != nil {
@@ -50,7 +50,7 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 			}
 			return errs.ErrGRPCInternal
 		}
-		thumbnail = downloadedThumbnail
+		t = downloadedThumbnail
 
 		if err := s.cache.SetThumbnail(videoID, downloadedThumbnail, expirationTime); err != nil {
 			slog.Error("failed to set thumbnail in cache", "error", err)
@@ -60,16 +60,16 @@ func (s *thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailReques
 	}
 
 	contentTypeSent := false
-	for i := 0; i < len(thumbnail.Data); i += maxChunkSize {
+	for i := 0; i < len(t.Data); i += maxChunkSize {
 		end := i + maxChunkSize
-		if end > len(thumbnail.Data) {
-			end = len(thumbnail.Data)
+		if end > len(t.Data) {
+			end = len(t.Data)
 		}
 
-		chunkData := thumbnail.Data[i:end]
+		chunkData := t.Data[i:end]
 		var thumbnailChunk *youthumbpb.ThumbnailChunk
 		if !contentTypeSent {
-			thumbnailChunk = &youthumbpb.ThumbnailChunk{Data: chunkData, ContentType: thumbnail.ContentType}
+			thumbnailChunk = &youthumbpb.ThumbnailChunk{Data: chunkData, ContentType: t.ContentType}
 			contentTypeSent = true
 		} else {
 			thumbnailChunk = &youthumbpb.ThumbnailChunk{Data: chunkData}
@@ -112,9 +112,9 @@ func downloadThumbnail(thumbnailURL string) (*cache.Thumbnail, time.Time, error)
 		return nil, time.Time{}, err
 	}
 
-	thumbnail := &cache.Thumbnail{
+	t := &cache.Thumbnail{
 		ContentType: resp.Header.Get("Content-Type"), Data: []byte(sb.String()),
 	}
 
-	return thumbnail, expirationTime, nil
+	return t, expirationTime, nil
 }

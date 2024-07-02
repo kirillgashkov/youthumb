@@ -75,8 +75,8 @@ func (c *Cache) GetThumbnail(videoID string) (*Thumbnail, error) {
 
 // SetThumbnail sets the thumbnail for the given video ID in the cache with the
 // given expiration time.
-func (c *Cache) SetThumbnail(videoID string, thumbnail *Thumbnail, expiration time.Time) error {
+func (c *Cache) SetThumbnail(videoID string, t *Thumbnail, expiration time.Time) error {
 	query := `INSERT OR REPLACE INTO cache (video_id, content_type, data, expires_at) VALUES (?, ?, ?, ?)`
-	_, err := c.db.Exec(query, videoID, thumbnail.ContentType, thumbnail.Data, expiration.Unix())
+	_, err := c.db.Exec(query, videoID, t.ContentType, t.Data, expiration.Unix())
 	return err
 }
