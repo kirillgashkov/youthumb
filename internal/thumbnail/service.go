@@ -50,10 +50,12 @@ func (s *Service) GetThumbnail(
 	if errors.Is(err, errNotFound) {
 		return errStatusNotFound
 	} else if err != nil {
+		slog.Error("failed to get thumbnail", "error", err)
 		return message.ErrStatusInternal
 	}
 
 	if err := send(stream, t); err != nil {
+		slog.Error("failed to send thumbnail", "error", err)
 		return message.ErrStatusInternal
 	}
 

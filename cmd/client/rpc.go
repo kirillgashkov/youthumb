@@ -1,7 +1,8 @@
 package main
 
 import (
-	"net/netip"
+	"net"
+	"strconv"
 
 	"github.com/kirillgashkov/assignment-youthumb/internal/app/config"
 
@@ -18,13 +19,9 @@ func newThumbnailServiceClient(conn *grpc.ClientConn) (youthumbpb.ThumbnailServi
 // newClient creates a new gRPC client connection. Caller is responsible for
 // closing the connection.
 func newClient(cfg config.GRPCConfig) (*grpc.ClientConn, error) {
-	addr, err := netip.ParseAddr(cfg.Host)
-	if err != nil {
-		return nil, err
-	}
-	addrPort := netip.AddrPortFrom(addr, uint16(cfg.Port))
+	addr := net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port))
 
-	conn, err := grpc.NewClient(addrPort.String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}

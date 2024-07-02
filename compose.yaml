@@ -2,6 +2,7 @@ services:
   server:
     build: .
     entrypoint: ["server"]
+    command: ["-d", "/user/data/db.sqlite3"]
     env_file:
       - example.env
     environment:

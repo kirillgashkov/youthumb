@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"mime"
@@ -103,12 +104,46 @@ func (d *thumbnailDownloader) DownloadThumbnailForVideoURL(ctx context.Context, 
 				return
 			}
 
-			if err := os.Rename(contentFile.Name(), outputFilePath); err != nil {
-				slog.Error("failed to rename file", "error", err)
+			// Copying the file instead of renaming it to avoid cross-device
+			// link errors.
+			if err := copyFile(contentFile.Name(), outputFilePath); err != nil {
+				slog.Error("failed to copy file", "src", contentFile.Name(), "dst", outputFilePath, "error", err)
+				return
 			}
 		}()
 	case <-ctx.Done():
 		return ctx.Err()
+	}
+
+	return nil
+}
+
+// copyFile copies a file from src to dst.
+//
+// If the dst file exists, it will be overwritten.
+func copyFile(src, dst string) error {
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf("failed to open source file: %v", err)
+	}
+	defer func(sourceFile *os.File) {
+		if err := sourceFile.Close(); err != nil && !errors.Is(err, os.ErrClosed) {
+			slog.Error("failed to close file", "error", err)
+		}
+	}(sourceFile)
+
+	destinationFile, err := os.Create(dst)
+	if err != nil {
+		return fmt.Errorf("failed to create destination file: %v", err)
+	}
+	defer func(destinationFile *os.File) {
+		if err := destinationFile.Close(); err != nil && !errors.Is(err, os.ErrClosed) {
+			slog.Error("failed to close file", "error", err)
+		}
+	}(destinationFile)
+
+	if _, err := io.Copy(destinationFile, sourceFile); err != nil {
+		return fmt.Errorf("failed to copy file content: %v", err)
 	}
 
 	return nil
