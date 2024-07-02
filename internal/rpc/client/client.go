@@ -10,14 +10,14 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// NewClient creates a new gRPC client.
-func NewClient(conn *grpc.ClientConn) (youthumbpb.ThumbnailServiceClient, error) {
+// NewThumbnailServiceClient creates a new gRPC client.
+func NewThumbnailServiceClient(conn *grpc.ClientConn) (youthumbpb.ThumbnailServiceClient, error) {
 	return youthumbpb.NewThumbnailServiceClient(conn), nil
 }
 
-// NewClientConn creates a new gRPC client connection. Caller is responsible for
+// NewClient creates a new gRPC client connection. Caller is responsible for
 // closing the connection.
-func NewClientConn(cfg config.GRPCConfig) (*grpc.ClientConn, error) {
+func NewClient(cfg config.GRPCConfig) (*grpc.ClientConn, error) {
 	addr, err := netip.ParseAddr(cfg.Host)
 	if err != nil {
 		return nil, err

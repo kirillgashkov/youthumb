@@ -79,12 +79,12 @@ func mainErr() error {
 	}
 	slog.SetDefault(logger)
 
-	clientConn, err := client.NewClientConn(cfg.GRPC)
+	clientConn, err := client.NewClient(cfg.GRPC)
 	if err != nil {
 		return err
 	}
 
-	cli, err := client.NewClient(clientConn)
+	cli, err := client.NewThumbnailServiceClient(clientConn)
 	if err != nil {
 		return err
 	}
