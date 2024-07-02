@@ -43,7 +43,7 @@ func Open(path string) (*Cache, error) {
 		return nil, err
 	}
 
-	return &Cache{Path: path, db: db, getStmt: getStmt, setStmt: setStmt}, nil
+	return &Cache{Path: path, db: db}, nil
 }
 
 // Close closes the cache.
