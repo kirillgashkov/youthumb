@@ -71,6 +71,8 @@ func (s *Service) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youth
 // send sends the thumbnail data to the client in chunks.
 func send(stream youthumbpb.ThumbnailService_GetThumbnailServer, t *Thumbnail) error {
 	contentTypeSent := false
+	contentType := t.ContentType
+
 	for i := 0; i < len(t.Data); i += maxChunkSize {
 		end := i + maxChunkSize
 		if end > len(t.Data) {
@@ -79,14 +81,27 @@ func send(stream youthumbpb.ThumbnailService_GetThumbnailServer, t *Thumbnail) e
 
 		chunkData := t.Data[i:end]
 		var thumbnailChunk *youthumbpb.ThumbnailChunk
+
+		// Include ContentType in the first chunk only.
 		if !contentTypeSent {
-			thumbnailChunk = &youthumbpb.ThumbnailChunk{Data: chunkData, ContentType: t.ContentType}
+			thumbnailChunk = &youthumbpb.ThumbnailChunk{
+				Data:        chunkData,
+				ContentType: contentType,
+			}
 			contentTypeSent = true
 		} else {
 			thumbnailChunk = &youthumbpb.ThumbnailChunk{Data: chunkData}
 		}
 
+		// Send the chunk to the stream.
 		if err := stream.Send(thumbnailChunk); err != nil {
+			return err
+		}
+	}
+
+	if !contentTypeSent {
+		// Send an empty chunk with ContentType if the thumbnail is empty.
+		if err := stream.Send(&youthumbpb.ThumbnailChunk{ContentType: contentType}); err != nil {
 			return err
 		}
 	}
