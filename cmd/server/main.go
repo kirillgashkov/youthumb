@@ -78,6 +78,9 @@ func usage() {
 A server for proxying YouTube video thumbnails. It downloads thumbnails from
 YouTube, caches them in a SQLite database and serves them via gRPC.
 
+gRPC server listening address is configured via the APP_GRPC_HOST and
+APP_GRPC_PORT.
+
 Options:
 `, os.Args[0])
 
