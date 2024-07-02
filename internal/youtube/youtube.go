@@ -8,16 +8,17 @@ import (
 // ThumbnailURLFromVideoURL returns a URL of a thumbnail for a given YouTube
 // video URL.
 func ThumbnailURLFromVideoURL(videoURL string) (string, error) {
-	videoID, err := parseVideoID(videoURL)
+	videoID, err := ParseVideoID(videoURL)
 	if err != nil {
 		return "", err
 	}
 
-	u, err := thumbnailURL(videoID)
+	u, err := ThumbnailURL(videoID)
 	return u, err
 }
 
-func parseVideoID(videoURL string) (string, error) {
+// ParseVideoID extracts a video ID from a YouTube video URL.
+func ParseVideoID(videoURL string) (string, error) {
 	u, err := url.Parse(videoURL)
 	if err != nil {
 		return "", err
@@ -37,7 +38,8 @@ func parseVideoID(videoURL string) (string, error) {
 	return "", fmt.Errorf("unknown video URL: %s", videoURL)
 }
 
-func thumbnailURL(videoID string) (string, error) {
+// ThumbnailURL returns a URL of a thumbnail for a given YouTube video ID.
+func ThumbnailURL(videoID string) (string, error) {
 	if videoID == "" {
 		return "", fmt.Errorf("video ID is required")
 	}
