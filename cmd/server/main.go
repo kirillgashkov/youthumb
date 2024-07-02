@@ -1,12 +1,30 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"github.com/kirillgashkov/assignment-youthumb/internal/api"
+	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
 	"github.com/kirillgashkov/assignment-youthumb/internal/config"
 	"github.com/kirillgashkov/assignment-youthumb/internal/logger"
 	"log/slog"
 	"net"
+	"os"
 )
+
+var (
+	cachePath = flag.String("cache", "", "Path to the cache SQLite database.")
+)
+
+func usage() {
+	fmt.Fprintf(flag.CommandLine.Output(), `Usage: %s [OPTIONS]
+
+Starts the server.
+
+Options:
+`, os.Args[0])
+	flag.PrintDefaults()
+}
 
 func main() {
 	if err := mainErr(); err != nil {
@@ -15,6 +33,13 @@ func main() {
 }
 
 func mainErr() error {
+	flag.Usage = usage
+	flag.Parse()
+
+	if *cachePath == "" {
+		return fmt.Errorf("cache path is required, see -help")
+	}
+
 	cfg, err := config.New()
 	if err != nil {
 		return err
@@ -26,7 +51,17 @@ func mainErr() error {
 	}
 	slog.SetDefault(log)
 
-	srv := api.NewServer(cfg)
+	cch, err := cache.Open(*cachePath)
+	if err != nil {
+		return err
+	}
+	defer func(cch *cache.Cache) {
+		if err := cch.Close(); err != nil {
+			slog.Error("failed to close cache", "error", err)
+		}
+	}(cch)
+
+	srv := api.NewServer(cch, cfg)
 
 	addr := &net.TCPAddr{IP: net.ParseIP(cfg.GRPC.Host), Port: cfg.GRPC.Port}
 	lis, err := net.ListenTCP("tcp", addr)

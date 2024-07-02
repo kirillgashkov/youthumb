@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/kirillgashkov/assignment-youthumb/internal/api/interceptor"
+	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
 	"github.com/kirillgashkov/assignment-youthumb/internal/config"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc"
@@ -9,7 +10,7 @@ import (
 )
 
 // NewServer creates a new gRPC server.
-func NewServer(cfg *config.Config) *grpc.Server {
+func NewServer(cch *cache.Cache, cfg *config.Config) *grpc.Server {
 	srv := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptor.NewUnaryServerLog(),
@@ -24,7 +25,7 @@ func NewServer(cfg *config.Config) *grpc.Server {
 	if cfg.Mode == config.ModeDevelopment {
 		reflection.Register(srv)
 	}
-	youthumbpb.RegisterThumbnailServiceServer(srv, &thumbnailServiceServer{})
+	youthumbpb.RegisterThumbnailServiceServer(srv, &thumbnailServiceServer{cache: cch})
 
 	return srv
 }

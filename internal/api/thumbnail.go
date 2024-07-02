@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/kirillgashkov/assignment-youthumb/internal/api/errors"
+	"github.com/kirillgashkov/assignment-youthumb/internal/cache"
 	"github.com/kirillgashkov/assignment-youthumb/internal/youtube"
 	"github.com/kirillgashkov/assignment-youthumb/proto/youthumbpb/v1"
 	"google.golang.org/grpc/codes"
@@ -16,6 +17,7 @@ const maxChunkSize = 64 * 1024
 
 type thumbnailServiceServer struct {
 	youthumbpb.UnimplementedThumbnailServiceServer
+	cache *cache.Cache
 }
 
 func (*thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest, stream youthumbpb.ThumbnailService_GetThumbnailServer) error {
@@ -28,7 +30,6 @@ func (*thumbnailServiceServer) GetThumbnail(req *youthumbpb.GetThumbnailRequest,
 		return status.Errorf(codes.InvalidArgument, "video URL is invalid")
 	}
 
-	slog.Info("thumbnail URL", "url", thumbnailURL)
 	resp, err := http.Get(thumbnailURL)
 	if err != nil {
 		return errors.ErrGRPCInternal
