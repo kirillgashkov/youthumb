@@ -32,7 +32,6 @@ func download(url string) (*Thumbnail, error) {
 }
 
 // fromResponse creates a Thumbnail from an HTTP response.
-//
 // The response must be successful (status code 200).
 func fromResponse(resp *http.Response) (*Thumbnail, error) {
 	expiration, err := time.Parse(time.RFC1123, resp.Header.Get("Expires"))

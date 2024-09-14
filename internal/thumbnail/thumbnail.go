@@ -6,8 +6,7 @@ import (
 )
 
 var (
-	// errNotFound is returned when a thumbnail is not found in cache or remote
-	// server.
+	// errNotFound is returned when a thumbnail is not found in cache or remote server.
 	errNotFound = errors.New("thumbnail not found")
 )
 

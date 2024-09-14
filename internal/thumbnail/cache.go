@@ -15,7 +15,6 @@ type Cache struct {
 }
 
 // OpenCache opens a new cache.
-//
 // The given DSN must be a SQLite DSN.
 func OpenCache(dsn string) (*Cache, error) {
 	db, err := sql.Open("sqlite3", dsn)
@@ -44,7 +43,6 @@ func (c *Cache) Close() error {
 }
 
 // GetThumbnail returns a thumbnail from the cache.
-//
 // If the thumbnail is not found in the cache, it returns errNotFound.
 func (c *Cache) GetThumbnail(videoID string) (*Thumbnail, error) {
 	query := `SELECT content_type, data, expires_at FROM cache WHERE video_id = ? AND expires_at > ?`
