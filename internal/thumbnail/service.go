@@ -16,9 +16,9 @@ const (
 )
 
 var (
-	errStatusMissingVideoURL = status.Errorf(codes.InvalidArgument, "video URL is required")
-	errStatusInvalidVideoURL = status.Errorf(codes.InvalidArgument, "video URL is invalid")
-	errStatusNotFound        = status.Errorf(codes.NotFound, "video or thumbnail not found")
+	ErrStatusMissingVideoURL = status.Errorf(codes.InvalidArgument, "video URL is required")
+	ErrStatusInvalidVideoURL = status.Errorf(codes.InvalidArgument, "video URL is invalid")
+	ErrStatusNotFound        = status.Errorf(codes.NotFound, "video or thumbnail not found")
 )
 
 // Service is a thumbnail service.
@@ -38,17 +38,17 @@ func (s *Service) GetThumbnail(
 	stream youthumbpb.ThumbnailService_GetThumbnailServer,
 ) error {
 	if req.VideoUrl == "" {
-		return errStatusMissingVideoURL
+		return ErrStatusMissingVideoURL
 	}
 
 	videoID, err := ParseVideoID(req.VideoUrl)
 	if err != nil {
-		return errStatusInvalidVideoURL
+		return ErrStatusInvalidVideoURL
 	}
 
 	t, err := s.getByVideoID(videoID)
-	if errors.Is(err, errNotFound) {
-		return errStatusNotFound
+	if errors.Is(err, ErrNotFound) {
+		return ErrStatusNotFound
 	} else if err != nil {
 		slog.Error("failed to get thumbnail", "error", err)
 		return message.ErrStatusInternal
@@ -72,7 +72,7 @@ func (s *Service) getByVideoID(videoID string) (*Thumbnail, error) {
 	}
 
 	// Error other than cache miss.
-	if !errors.Is(err, errNotFound) {
+	if !errors.Is(err, ErrNotFound) {
 		return nil, err
 	}
 

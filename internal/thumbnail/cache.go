@@ -43,7 +43,7 @@ func (c *Cache) Close() error {
 }
 
 // GetThumbnail returns a thumbnail from the cache.
-// If the thumbnail is not found in the cache, it returns errNotFound.
+// If the thumbnail is not found in the cache, it returns ErrNotFound.
 func (c *Cache) GetThumbnail(videoID string) (*Thumbnail, error) {
 	query := `SELECT content_type, data, expires_at FROM cache WHERE video_id = ? AND expires_at > ?`
 	row := c.db.QueryRow(query, videoID, time.Now().Unix())
@@ -53,7 +53,7 @@ func (c *Cache) GetThumbnail(videoID string) (*Thumbnail, error) {
 	var expiration int64
 	err := row.Scan(&contentType, &data, &expiration)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, errNotFound
+		return nil, ErrNotFound
 	}
 	if err != nil {
 		return nil, err

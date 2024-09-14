@@ -23,7 +23,7 @@ func download(url string) (*Thumbnail, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusNotFound {
-			return nil, errNotFound
+			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
