@@ -17,9 +17,9 @@ import (
 	"strings"
 )
 
-// protocGenGoPackage and protocGenGoGRPCPackage are the Go package paths for
-// the protoc-gen-go and protoc-gen-go-grpc plugins, respectively. The versions
-// of these plugins are determined by go.mod.
+// protocGenGoPackage and protocGenGoGRPCPackage are the Go package paths
+// for the protoc-gen-go and protoc-gen-go-grpc plugins, respectively.
+// The versions of these plugins are determined by go.mod.
 const (
 	protocGenGoPackage     = "google.golang.org/protobuf/cmd/protoc-gen-go"
 	protocGenGoGRPCPackage = "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
@@ -51,9 +51,8 @@ var protocZipURL = func() string {
 	)
 }()
 
-// protocExitError is an error that is used to communicate the exit code of the
-// protoc command. The code is not necessarily a non-zero value, it is the
-// actual exit code of the protoc command.
+// protocExitError is an error that is used to communicate the exit code of the protoc command.
+// The code is not necessarily a non-zero value, it is the actual exit code of the protoc command.
 type protocExitError struct {
 	code int
 }
@@ -74,8 +73,8 @@ func main() {
 	}
 }
 
-// mainErr always returns a non-nil error. The exit code of the protoc command
-// is returned via protocExitError.
+// mainErr always returns a non-nil error.
+// The exit code of the protoc command is returned via protocExitError.
 func mainErr() error {
 	// Create a temporary directory to store the protoc binary and the plugins.
 
@@ -92,8 +91,7 @@ func mainErr() error {
 	binDir := filepath.Join(workDir, "bin")
 	includeDir := filepath.Join(workDir, "include")
 
-	// Install the protoc binary and the protoc-gen-go and protoc-gen-go-grpc
-	// plugins.
+	// Install the protoc binary and the protoc-gen-go and protoc-gen-go-grpc plugins.
 
 	if err := installProtoc(binDir, includeDir); err != nil {
 		return err
@@ -136,8 +134,7 @@ func mainErr() error {
 	}
 }
 
-// installProtoc downloads the protoc binary and include files and installs them
-// to the given directories.
+// installProtoc downloads the protoc binary and include files and installs them to the given directories.
 func installProtoc(binDir string, includeDir string) error {
 	// Download the protoc zip file.
 
@@ -200,8 +197,8 @@ func installProtocGenGo(binDir string) error {
 	return nil
 }
 
-// installProtocGenGoGRPC installs the protoc-gen-go-grpc plugin to the given
-// directory. The plugin is built from the protoc-gen-go-grpc package.
+// installProtocGenGoGRPC installs the protoc-gen-go-grpc plugin to the given directory.
+// The plugin is built from the protoc-gen-go-grpc package.
 func installProtocGenGoGRPC(binDir string) error {
 	if err := os.MkdirAll(binDir, 0755); err != nil {
 		return err
@@ -214,8 +211,7 @@ func installProtocGenGoGRPC(binDir string) error {
 	return nil
 }
 
-// downloadURL downloads the file at the given URL and writes it to the given
-// file.
+// downloadURL downloads the file at the given URL and writes it to the given file.
 func downloadURL(url string, file *os.File) error {
 	r, err := http.Get(url)
 	if err != nil {
@@ -301,8 +297,7 @@ func writeZipFile(srcFile *zip.File, dstPath string) error {
 	return nil
 }
 
-// buildPackage builds the Go package at the given path and writes the binary to
-// the given destination.
+// buildPackage builds the Go package at the given path and writes the binary to the given destination.
 func buildPackage(pkg, dst string) error {
 	cmd := exec.Command("go", "build", "-o", dst, pkg)
 	cmd.Stdout = os.Stdout
