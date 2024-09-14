@@ -9,8 +9,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// NewUnaryServerRecover returns a new unary server interceptor that recovers
-// from panics.
+// NewUnaryServerRecover returns a new unary server interceptor that recovers from panics.
 func NewUnaryServerRecover() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 		defer func() {
@@ -24,8 +23,8 @@ func NewUnaryServerRecover() grpc.UnaryServerInterceptor {
 	}
 }
 
-// NewStreamServerRecover returns a new stream server interceptor that recovers
-// from panics. Message receive and send operations are not recovered.
+// NewStreamServerRecover returns a new stream server interceptor that recovers from panics.
+// Message receive and send operations are not recovered.
 func NewStreamServerRecover() grpc.StreamServerInterceptor {
 	return func(srv any, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
 		defer func() {

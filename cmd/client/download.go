@@ -119,7 +119,6 @@ func (d *thumbnailDownloader) DownloadThumbnailForVideoURL(ctx context.Context, 
 }
 
 // copyFile copies a file from src to dst.
-//
 // If the dst file exists, it will be overwritten.
 func copyFile(src, dst string) error {
 	sourceFile, err := os.Open(src)

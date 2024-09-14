@@ -16,8 +16,8 @@ func newThumbnailServiceClient(conn *grpc.ClientConn) (youthumbpb.ThumbnailServi
 	return youthumbpb.NewThumbnailServiceClient(conn), nil
 }
 
-// newClient creates a new gRPC client connection. Caller is responsible for
-// closing the connection.
+// newClient creates a new gRPC client connection.
+// Caller is responsible for closing the connection.
 func newClient(cfg config.GRPCConfig) (*grpc.ClientConn, error) {
 	addr := net.JoinHostPort(cfg.Host, strconv.Itoa(cfg.Port))
 
