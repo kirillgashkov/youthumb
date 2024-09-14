@@ -1,23 +1,11 @@
 # YouThumb
 
-gRPC сервис для загрузки thumbnail изображений с YouTube.
-
-*Автор: [Кирилл Гашков](https://k11v.cc/ru).*
-
-## Чеклист
-
-- [x] gRPC сервер для раздачи изображений
-- [x] Кэширование изображений в SQLite
-- [x] gRPC клиент для загрузки изображений
-- [x] Опция клиента `-async` для асинхронной загрузки изображений
-- [x] Тесты (частично)
-- [x] Docker и Docker Compose
-- [x] GitHub Actions
+gRPC service for downloading thumbnail images from YouTube.
 
 ## gRPC API
 
-Пользователь отправляет запрос на получение thumbnail изображения по URL видео на YouTube. Сервис
-возвращает изображение в виде последовательности чанков.
+The user sends a request to get a thumbnail image by the URL of a YouTube video.
+The service returns the image as a sequence of chunks.
 
 ```proto
 package youthumb.v1;
@@ -36,53 +24,49 @@ message ThumbnailChunk {
 }
 ```
 
-В качестве `video_url` можно использовать и обычную ссылку, и коротую. Например,
-ссылки `https://www.youtube.com/watch?v=dQw4w9WgXcQ` и
-`https://youtu.be/dQw4w9WgXcQ` эквивалентны. Больше поддерживаемых форматов можно
-увидеть в тесте [`internal/thumbnail/url_test.go`](internal/thumbnail/url_test.go).
+You can use both regular and short URLs as `video_url`.
+For example, the links `https://www.youtube.com/watch?v=dQw4w9WgXcQ` and `https://youtu.be/dQw4w9WgXcQ` are equivalent.
+More supported formats can be seen in the test [`internal/thumbnail/url_test.go`](internal/thumbnail/url_test.go).
 
-Полное определение сервиса и документация в файле [`proto/youthumb/v1/youthumb.proto`](proto/youthumb/v1/youthumb.proto).
+The full service definition and documentation are in the file [`proto/youthumb/v1/youthumb.proto`](proto/youthumb/v1/youthumb.proto).
 
-## Архитектура
+## Architecture
 
-Две точки входа:
+Two entry points:
 
-- [`cmd/server`](cmd/server) - точка входа для запуска gRPC сервера.
-- [`cmd/client`](cmd/client) - пример gRPC клиента для отправки запросов на сервер.
+- [`cmd/server`](cmd/server) - entry point for running the gRPC server.
+- [`cmd/client`](cmd/client) - example gRPC client for sending requests to the server.
 
-Основной пакет с бизнес-логикой:
+Main package with business logic:
 
-- [`internal/thumbnail`](internal/thumbnail) - пакет с бизнес-логикой сервиса и
-  реализацией gRPC сервера.
+- [`internal/thumbnail`](internal/thumbnail) - package with the service's business logic and gRPC server implementation.
 
-Вспомогательныe пакеты для gRPC:
+Auxiliary packages for gRPC:
 
-- [`internal/rpc`](internal/rpc) - пакет с основным конструктором gRPC сервера.
-- [`internal/rpc/interceptor`](internal/rpc/interceptor) - пакет с middleware для gRPC сервера.
-- [`internal/rpc/message`](internal/rpc/message) - пакет с общими сообщениями для gRPC сервера.
+- [`internal/rpc`](internal/rpc) - package with the main gRPC server constructor.
+- [`internal/rpc/interceptor`](internal/rpc/interceptor) - package with middleware for the gRPC server.
+- [`internal/rpc/message`](internal/rpc/message) - package with common messages for the gRPC server.
 
-Вспомогательныe пакеты для приложения:
+Auxiliary packages for the application:
 
-- [`internal/app`](internal/app) - пакет с общими компонентами приложения.
-- [`internal/app/config`](internal/app/config) - пакет с конфигурацией приложения.
-- [`internal/app/log`](internal/app/log) - пакет с логгером приложения.
+- [`internal/app`](internal/app) - package with common application components.
+- [`internal/app/config`](internal/app/config) - package with application configuration.
+- [`internal/app/log`](internal/app/log) - package with the application logger.
 
-## Установка и запуск
+## Installation and Running
 
-> *Примечание:* для тестирования в репозитории есть файлы с ссылками на видео.
-> Файлы находятся в папке [`examples`](examples). Файлы с 50 и 250 ссылками для
-> тестирования содержат ссылки на несуществующие видео, чтобы продемонстрировать
-> обработку ошибок.
+> *Note:* For testing, the repository contains files with video links. The files are located in the [`examples`](examples) folder.
+> The files with 50 and 250 links for testing contain links to non-existent videos to demonstrate error handling.
 
-### Вручную
+### Manually
 
-Запуск сервера с базой данных SQLite для кэша:
+Running the server with an SQLite database for caching:
 
-```
+```sh
 $ go run ./cmd/server -d db.sqlite3
 ```
 
-Запуск клиента для загрузки изображений для 50 видео с YouTube асинхронно, результаты сохраняются в папку `./results`:
+Running the client to download images for 50 YouTube videos asynchronously, results are saved in the `./results` folder:
 
 ```sh
 $ go run ./cmd/client -async -o ./results ./examples/video_urls_50.txt
@@ -90,25 +74,22 @@ $ go run ./cmd/client -async -o ./results ./examples/video_urls_50.txt
 
 ### Docker Compose
 
-> *Предупреждение:* сборка образов может занять некоторое время.
+> *Warning:* Inside the containers, a regular user `user` is used, so when running the containers,
+> you need to pass the current user to the containers to avoid file access permission issues.
 
-> *Предупреждение:* внутри контейнеров используется обычный пользователь `user`, поэтому при запуске контейнеров
-> необходимо пробросить текущего пользователя в контейнеры, чтобы избежать проблем с правами доступа к файлам.
+Building and running the server with an SQLite database for caching:
 
-Сборка и запуск сервера с базой данных SQLite для кэша:
-
-```
+```sh
 $ docker compose up --build
 ```
 
-Сборка и запуск клиента для загрузки изображений для 50 видео с YouTube асинхронно, результаты сохраняются в папку
-`./results`:
+Building and running the client to download images for 50 YouTube videos asynchronously, results are saved in the `./results` folder:
 
 ```sh
-# Данная docker compose run команда:
-# - Делает текущую рабочую директорию доступной внутри контейнера Docker (--volume).
-# - Заставляет клиента использовать того же пользователя внутри контейнера, чтобы он мог получить доступ к рабочей директории (--user).
-# - Помогает клиенту избежать проблем, если *ваш* пользователь не существует внутри контейнера, устанавливая HOME в *доступную для записи* директорию (--env).
+# This docker compose run command:
+# - Makes the current working directory available inside the Docker container (--volume).
+# - Forces the client to use the same user inside the container so it can access the working directory (--user).
+# - Helps the client avoid issues if *your* user does not exist inside the container by setting HOME to a *writable* directory (--env).
 $ docker compose run --build \
     --volume "$(pwd):/user/data" \
     --user "$(id -u):$(id -g)" \
@@ -116,18 +97,15 @@ $ docker compose run --build \
     client -async -o ./results examples/video_urls_50.txt
 ```
 
-## Демо
+## Demo
 
 [![](assets/demo.png)](https://drive.google.com/file/d/18OGnqKGRguiHuV0eoTHgOyJAUHd66tS6/view?usp=sharing)
 
-В [видео](https://drive.google.com/file/d/18OGnqKGRguiHuV0eoTHgOyJAUHd66tS6/view?usp=sharing) показано:
+In the [video](https://drive.google.com/file/d/18OGnqKGRguiHuV0eoTHgOyJAUHd66tS6/view?usp=sharing), the following is shown:
 
-1. Сборка клиента и сервера.
-2. Запуск сервера в правом терминале на чистой базе данных.
-3. Запуск клиента в левом терминале для загрузки изображений для 250 видео с YouTube в асинхронном режиме. Клиент 
-   корректно выводит сообщения о трех не найденных видео с идентификаторами `00000000001`, `00000000002` и
-   `00000000003`.
-4. Показ содержимого папки `./results` с загруженными изображениями.
-5. Удаление папки `./results` и повторный запуск клиента для тех же видео. В этот раз клиент получает изображения
-   от сервера из кэша, что видно по заметно быстрому завершению работы клиента.
-6. Повторный показ содержимого папки `./results` с загруженными изображениями.
+1. Building the client and server.
+2. Running the server in the right terminal on a clean database.
+3. Running the client in the left terminal to download images for 250 YouTube videos asynchronously. The client correctly outputs messages about three not found videos with IDs `00000000001`, `00000000002`, and `00000000003`.
+4. Showing the contents of the `./results` folder with the downloaded images.
+5. Deleting the `./results` folder and re-running the client for the same videos. This time, the client gets images from the server cache, as seen by the noticeably faster completion of the client's work.
+6. Re-showing the contents of the `./results` folder with the downloaded images.
